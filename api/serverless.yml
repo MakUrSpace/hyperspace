@@ -1,0 +1,30 @@
+service: hyperspace-api
+
+plugins:
+  - serverless-python-requirements
+provider:
+  name: aws
+  stage: prod
+  runtime: python3.8
+  region: us-east-1
+  apiGateway:
+    binaryMediaTypes:
+      - '*/*'
+
+functions:
+  hyperspace_api:
+    name: hyperspace_api
+    handler: hyperspace_api.lambda_handler
+    memorySize: 128
+    timeout: 30
+    events:
+      - http:
+          path: /
+          method: get
+
+
+custom:
+  pythonRequirements:
+    dockerizePip: non-linux
+    noDeploy: []
+
