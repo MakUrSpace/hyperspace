@@ -15,6 +15,10 @@ provider:
       Action:
         - s3:GetObject
       Resource: "arn:aws:s3:::makurspace/server/*"
+    - Effect: Allow
+      Action:
+        - dynamodb:*
+      Resource: "*"
 
 functions:
   hyperspace_server:
@@ -24,7 +28,13 @@ functions:
     timeout: 30
     events:
       - http:
-          path: /{path}
+          path: /
+          method: get
+      - http:
+          path: /static/{path}
+          method: get
+      - http:
+          path: /maker_module/{gpid}
           method: get
 
 
