@@ -1,3 +1,5 @@
+from boto3.dynamodb.types import Binary
+from datetime import datetime, timedelta
 from murdaws import DDBMurd
 
 
@@ -48,7 +50,7 @@ cams_template = """
 def serve_maker_module(event):
     murd = DDBMurd("hyperspace")
     gpid = event['pathParameters']['gpid']
-    mm = murd.read_first(group=gpid)
+    mm = murd.read_first(group=gpid, min_sort=(datetime.utcnow() - timedelta(hours=2)).isoformat())
     body = body_template.replace("{gpid}", mm['GROUP']).replace("{timestamp}", mm['SORT'])
 
     power = power_template.replace(
@@ -59,11 +61,13 @@ def serve_maker_module(event):
         " ".join([f"<th>{ps}</th>" for ps in mm['power']['state'].values()]))
 
     cam_nums = [k for k in mm['cams'].keys() if k != 'TIMESTAMP']
+    cam_images = {cn: murd.read_first(group=f"0_SNAPSHOT", sort=mm['cams'][cn])['SNAPSHOT'] for cn in cam_nums}
+    cam_images = {cn: image.value.decode() for cn, image in cam_images.items() if isinstance(image, Binary)}
     cams = cams_template.replace(
         "{images}",
         "\n".join([f'<h4>{cam_num} Snapshot</h4>\n'
-                   f'<img src="data:image/jpg;base64,{mm["cams"][cam_num].value.decode()}" alt="{cam_num} snapshot"/>\n'
-                   for cam_num in cam_nums]))
+                   f'<img src="data:image/jpg;base64,{cam_images[cam_num]}" alt="{cam_num} snapshot"/>\n'
+                   for cam_num in cam_images]))
 
     body = body.replace("{thing_states}", "\n".join([power, cams]))
     page = page_template.replace("{status}", body)
