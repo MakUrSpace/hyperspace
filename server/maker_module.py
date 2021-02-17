@@ -1,5 +1,4 @@
 from boto3.dynamodb.types import Binary
-from datetime import datetime, timedelta
 from murdaws import DDBMurd
 
 
@@ -50,7 +49,7 @@ cams_template = """
 def serve_maker_module(event):
     murd = DDBMurd("hyperspace")
     gpid = event['pathParameters']['gpid']
-    mm = murd.read_first(group=gpid, min_sort=(datetime.utcnow() - timedelta(hours=2)).isoformat())
+    mm = murd.read_first(group=gpid)
     body = body_template.replace("{gpid}", mm['GROUP']).replace("{timestamp}", mm['SORT'])
 
     power = power_template.replace(
