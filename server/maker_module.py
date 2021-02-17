@@ -69,5 +69,6 @@ def serve_maker_module(event):
                    for cam_num in cam_images]))
 
     body = body.replace("{thing_states}", "\n".join([power, cams]))
-    page = page_template.replace("{status}", body)
+    page = page_template.replace("{status}", body).replace("{gpid}", mm['GROUP'])
+
     return 200, page
