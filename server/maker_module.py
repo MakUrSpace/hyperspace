@@ -16,6 +16,7 @@ page_template = """
 </head>
 <body>
 {status}
+<iframe src="/aframe">
 </body>
 </html>
 """

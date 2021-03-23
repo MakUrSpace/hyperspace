@@ -3,6 +3,7 @@ import json
 import hashlib
 from datetime import datetime
 from io import BytesIO
+from requests_toolbelt.multipart.decoder import MultipartDecoder
 
 
 class LambdaPage:
@@ -47,13 +48,16 @@ class LambdaPage:
             "body": ''}
 
         content_type = func.headers['content-type'].split(';')[0]
-        if not isinstance(body, str) and content_type not in ['image/png', 'image/jpg']:
+        if not isinstance(body, str) and content_type not in ['image/png', 'image/jpg',
+                                                              'application/octet-stream']:
             body = json.dumps(body)
         if content_type in ['image/png', 'image/jpg', 'image/x-icon']:
             response['headers']['IsBase64Encoded'] = True
+        else:
+            response['headers']['IsBase64Encoded'] = False
         if content_type not in \
             ['application/json', 'text/html', 'text/js', 'text/css',
-             'image/png', 'image/jpg', 'application/javascript']:
+             'image/png', 'image/jpg', 'application/javascript', 'application/octet-stream']:
             body = body.encode()
         response['body'] = body
         print({k: v for k, v in response.items() if k != 'body'})
@@ -70,13 +74,18 @@ class LambdaPage:
 
             @staticmethod
             def _req_to_event(req, **kwargs):
+                if 'multipart' in req.content_type:
+                    body = MultipartDecoder(content=req.bounded_stream.read(),
+                                            content_type=req.content_type)
+                else:
+                    body = req.bounded_stream.read().decode()
                 event = {
                     'path': req.path,
                     'resource': req.uri_template,
                     'httpMethod': req.method.lower(),
                     'headers': req.headers,
                     'queryStringParameters': req.params,
-                    'body': req.bounded_stream.read().decode(),
+                    'body': body,
                     'pathParameters': kwargs
                 }
                 print('translated Falcon request to event: \n%s' % json.dumps(event, indent=2, default=str))
@@ -99,6 +108,7 @@ class LambdaPage:
                 self._ret_to_resp(ret, resp)
 
             def on_post(self, req, resp, **kwargs):
+                # TODO: handle multipart upload with requests-toolbelt.multipart.decoder
                 event = self._req_to_event(req, **kwargs)
                 ret = self.request_handler(event)
                 self._ret_to_resp(ret, resp)
