@@ -8,3 +8,4 @@ markdown-checklist
 pytz
 Pillow
 
+requests_toolbelt
