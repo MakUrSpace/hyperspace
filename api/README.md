@@ -7,38 +7,41 @@ Configure environment for AWS programmatic environment and install Serverless. T
 
 The server can be started locally by running `python hyperspace_api.py`
 
-# Endpoints
-## /bountyboard/{bounty_name}
+# Bounty Definition
 
-### Bounty Definition
+Many endpoints return a bounty definition or a collection of bounty definitions. The attributes of a Bounty Definition are defined below:
 
-#### Bounty
+## Bounty
 
 Asking price for the described good. Defined as a float, though typically stored and returned as a string
 
-#### BountyName
+## BountyName
 
 Name for the bounty. This must be a unique string among active bounties.
 
-#### Benefactor
+## Benefactor
 
 Name of the entity to receive the described good
 
-#### Contact
+## Contact
 
 Email address at which to contact the Benefactor
 
-#### TemplateProject
+## TemplateProject
 
 Name of a template project to use as a reference
 
-#### ProjectDescription
+## ProjectDescription
 
 Up to 2000 words describing the good the bounty is requesting.
 
-#### ReferenceMaterial
+## ReferenceMaterial
 
 A list of the names of larger assets to use for reference in describing the requested good. The actual assets are stored separately from the bounty definitions in S3. This list is the portion of the S3 object key beneath the bounty's allocated storage location.
+
+
+# Endpoints
+## /bountyboard/{bounty_name}
 
 ### GET
 
