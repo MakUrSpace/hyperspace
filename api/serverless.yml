@@ -7,9 +7,17 @@ provider:
   stage: prod
   runtime: python3.8
   region: us-east-1
-  apiGateway:
-    binaryMediaTypes:
-      - '*/*'
+  iamRoleStatements:
+    - Effect: Allow
+      Action:
+        - dynamodb:ListTables
+      Resource: '*'
+    - Effect: Allow
+      Action:
+        - dynamodb:*
+      Resource: 'arn:aws:dynamodb:*:*:table/musbb_murd_*'
+
+
 
 functions:
   hyperspace_api:
@@ -19,14 +27,17 @@ functions:
     timeout: 30
     events:
       - http:
-          path: /
+          path: /rest/bounty_form
+          method: post
+      - http:
+          path: /rest/bountyboard
+          method: post
+      - http:
+          path: /rest/bountyboard/{bounty_name}
           method: get
       - http:
-          path: /
-          method: put
-      - http:
-          path: /
-          method: delete
+          path: /rest/bountyboard
+          method: get
 
 
 custom:
