@@ -2,6 +2,7 @@ service: hyperspace-api
 
 plugins:
   - serverless-python-requirements
+  - serverless-apigw-binary
 provider:
   name: aws
   stage: prod
@@ -17,8 +18,6 @@ provider:
         - dynamodb:*
       Resource: 'arn:aws:dynamodb:*:*:table/musbb_murd_*'
 
-
-
 functions:
   hyperspace_api:
     name: hyperspace_api
@@ -29,6 +28,9 @@ functions:
       - http:
           path: /rest/bounty_form
           method: post
+      - http:
+          path: /rest/bounty_form
+          method: get
       - http:
           path: /rest/bountyboard
           method: post
@@ -44,4 +46,7 @@ custom:
   pythonRequirements:
     dockerizePip: non-linux
     noDeploy: []
+  apigwBinary:
+    types:
+      - 'multipart/form-data'
 

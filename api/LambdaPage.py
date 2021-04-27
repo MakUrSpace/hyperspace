@@ -5,6 +5,9 @@ from datetime import datetime
 from io import BytesIO
 
 
+binary_content_types = ['image/jpeg', 'image/png', 'multipart/form-data']
+
+
 class LambdaPage:
     def __init__(self, cache=None):
         self.endpoints = {}
@@ -75,7 +78,7 @@ class LambdaPage:
                     'httpMethod': req.method.lower(),
                     'headers': req.headers,
                     'queryStringParameters': req.params,
-                    'body': req.bounded_stream.read().decode(),
+                    'body': req.bounded_stream.read(),
                     'pathParameters': kwargs
                 }
                 print('translated Falcon request to event: \n%s' % json.dumps(event, indent=2, default=str))

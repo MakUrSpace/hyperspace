@@ -5,7 +5,6 @@ from urllib.parse import unquote_plus
 
 from LambdaPage import LambdaPage
 from murdaws import murd_ddb as mddb
-import s3
 
 
 mddb.ddb_murd_prefix = "musbb_murd_"
@@ -63,15 +62,42 @@ def new_bounty(event):
                      mddb.sort_key: new_bounty.BountyName},
                   **new_bounty.to_dict()}])
     # TODO: read back after write to test for success
-    return 200
+    written_bounty = Bounty.from_m(murd.read_first(group="bounty", sort=new_bounty.BountyName))
+    if written_bounty == new_bounty:
+        return 200
+    else:
+        return 503
+
+
+def serve_bounty_submission(event):
+    return 200, """
+<head>
+  <title>MakUrSpace Project Submission</title>
+</head>
+
+<body>
+  Here's the form
+  <form enctype="multipart/form-data" action="/rest/bounty_form" method="post">
+    Bounty: <input type="float" name="bounty_amount"><br>
+    Bounty Name: <input type="text" name="bounty_name"><br>
+    Benefactor: <input type="text" name="benefactor"><br>
+    Contact Benefactor at: <input type="text" name="benefactor_contact"><br>
+    Template Project: <input type="text" name="template_project"><br>
+    Project Description: <textarea rows="5" cols="50" name="bounty_description"></textarea><br>
+    Reference Material: <input type="file" name="reference_material" multiple><br>
+    <input type="submit"><br>
+</body>
+"""
 
 
 def submit_bounty_form(event):
+    # Handle multipart form
     return 200
 
 
 def build_page():
     page = LambdaPage()
+    page.add_endpoint(method="get", path="/rest/bounty_form", func=serve_bounty_submission, content_type="text/html")
     page.add_endpoint(method="post", path="/rest/bounty_form", func=submit_bounty_form)
     page.add_endpoint(method="post", path="/rest/bountyboard", func=new_bounty)
     page.add_endpoint(method="get", path="/rest/bountyboard/{bounty_name}", func=handle_get_bounty)
@@ -80,7 +106,7 @@ def build_page():
 
 
 def lambda_handler(event, context):
-    print(f"Handling event: {str(event)[:500]}")
+    print(f"Handling event: {str(event)}")
     page = build_page()
     results = page.handle_request(event)
     print(results['statusCode'])
