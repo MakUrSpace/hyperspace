@@ -1,0 +1,30 @@
+service: makurspace-static-server
+
+plugins:
+  - serverless-s3-sync
+provider:
+  name: aws
+  stage: prod
+  region: us-east-1
+
+
+resources:
+  Resources:
+    MakUrSpaceStaticAssets:
+      Type: AWS::S3::Bucket
+      Properties:
+        BucketName: makurspace-static-assets
+        AccessControl: PublicRead
+        WebsiteConfiguration:
+          IndexDocument: index.html
+          ErrorDocument: error.html
+
+
+custom:
+  s3Sync:
+    - bucketName: makurspace-static-assets
+      localDir: ./
+      deleteRemoved: true
+      acl: public-read
+
+
