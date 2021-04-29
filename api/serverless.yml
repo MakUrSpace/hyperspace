@@ -17,6 +17,10 @@ provider:
       Action:
         - dynamodb:*
       Resource: 'arn:aws:dynamodb:*:*:table/musbb_murd_*'
+    - Effect: Allow
+      Action:
+        - s3:*
+      Resource: 'arn:aws:s3:::makurspace-static-assets'
 
 functions:
   hyperspace_api:
