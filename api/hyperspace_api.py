@@ -158,11 +158,16 @@ def submit_bounty_form(event):
     return 200, response_template
 
 
+def return_index(event):
+    return 200, open("../frontend/index.html", "r").read()
+
+
 def build_page():
     page = LambdaPage()
     page.add_endpoint(method="post", path="/rest/bounty_form", func=submit_bounty_form, content_type="text/html")
     page.add_endpoint(method="get", path="/rest/bountyboard/{bounty_name}", func=handle_get_bounty)
     page.add_endpoint(method="get", path="/rest/bountyboard", func=get_bounty_board)
+    page.add_endpoint(method="get", path="/", content_type="text/html", func=return_index)
     return page
 
 
