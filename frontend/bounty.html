@@ -18,106 +18,84 @@
 
   <link rel="shortcut icon" href="MakUrSpace_Logo.png" type="image/x-icon">
 
+  <script>
+    updateList = function() {
+        var input = document.getElementById('ReferenceMaterial');
+        var output = document.getElementById('fileList');
+        var children = "";
+        for (var i = 0; i < input.files.length; ++i) {
+            children += '<li>' + input.files.item(i).name + '</li>';
+        }
+        if (input.files.length > 1) {
+          output.innerHTML = '<ul>'+children+'</ul>';
+        } else {
+          output.innerHTML = ''
+        }
+    }
+  </script>
 </head>
 
 <body>
 
   <!-- Navigation -->
-  <nav class="navbar fixed-top navbar-expand-lg navbar-dark bg-dark fixed-top">
-    <div class="container">
-      <a class="navbar-brand" href="index.html">MakUrSpace - Bounty</a>
-      <button class="navbar-toggler navbar-toggler-right" type="button" data-toggle="collapse" data-target="#navbarResponsive" aria-controls="navbarResponsive" aria-expanded="false" aria-label="Toggle navigation">
-        <span class="navbar-toggler-icon"></span>
-      </button>
-      <div class="collapse navbar-collapse" id="navbarResponsive">
-        <ul class="navbar-nav ml-auto">
-          <li class="nav-item">
-            <a class="nav-link" href="about.html">About</a>
-          </li>
-          <li class="nav-item">
-            <a class="nav-link" href="services.html">Services</a>
-          </li>
-          <li class="nav-item">
-            <a class="nav-link" href="contact.html">Contact</a>
-          </li>
-          <li class="nav-item">
-            <a class="nav-link" href="bounty.html">Bounty</a>
-          </li>
-          <li class="nav-item">
-            <button type="button" class="btn btn-link">Sign Up</button>
-          </li>
-        </ul>
-      </div>
-    </div>
-  </nav>
+  <object data="/navbar.html" width="100%"></object>
 
   <!-- Page Content -->
 
     <!-- Bounty Form -->
     <!-- In order to set the email address and subject line for the contact form go to the bin/contact_me.php file. -->
+  <div class="container">
     <div class="row">
       <div class="col-lg-8 mb-4">
         <h3>Submit a Bounty!</h3>
-        <form name="sentMessage" id="contactForm" novalidate>
+        <form name="sentMessage" id="contactForm" novalidate method="post" action="/rest/bounty_form" enctype="multipart/form-data">
           <div class="control-group form-group">
             <div class="controls">
               <label>Bounty:</label>
-              <input type="text" class="form-control" id="name" required data-validation-required-message="Please enter your name.">
+              <input type="float" class="form-control" id="Bounty" name="Bounty" required data-validation-required-message="Please enter your name.">
               <p class="help-block"></p>
             </div>
           </div>
           <div class="control-group form-group">
             <div class="controls">
               <label>Bounty Name:</label>
-              <input type="tel" class="form-control" id="phone" required data-validation-required-message="Please enter your phone number.">
+              <input type="text" class="form-control" id="BountyName" name="BountyName" required data-validation-required-message="Please enter your phone number.">
             </div>
           </div>
           <div class="control-group form-group">
             <div class="controls">
               <label>Benefactor:</label>
-              <input type="email" class="form-control" id="email" required data-validation-required-message="Please enter your email address.">
+              <input type="text" class="form-control" id="Benefactor" name="Benefactor" required data-validation-required-message="Please enter your email address.">
+            </div>
+          </div>
+          <div class="control-group form-group">
+            <div class="controls">
+              <label>Contact Benefactor at:</label>
+              <input type="email" class="form-control" id="Contact" name="Contact" required data-validation-required-message="Please enter your email address.">
             </div>
           </div>
           <div class="control-group form-group">
             <div class="controls">
               <label>Requested Maker:</label>
-              <input type="email" class="form-control" id="email" required data-validation-required-message="Please enter your email address.">
-            </div>
-          </div>
-          <div class="control-group form-group">
-            <div class="controls">
-              <label>Isolated Build: </label>
-              <input type="email" class="form-control" id="email" required data-validation-required-message="Please enter your email address.">
-            </div>
-          </div>
-          <div class="control-group form-group">
-            <div class="controls">
-              <label>Benefactor Contact:</label>
-              <input type="email" class="form-control" id="email" required data-validation-required-message="Please enter your email address.">
+              <input type="text" class="form-control" id="RequestedMaker" name="RequestedMaker" required data-validation-required-message="Please enter your email address.">
             </div>
           </div>
           <div class="control-group form-group">
             <div class="controls">
               <label>Template Project:</label>
-              <input type="email" class="form-control" id="email" required data-validation-required-message="Please enter your email address.">
+              <input type="email" class="form-control" id="TemplateProject" name="TemplateProject" required data-validation-required-message="Please enter your email address.">
             </div>
           </div>
           <div class="control-group form-group">
             <div class="controls">
-              <label>Email Address:</label>
-              <input type="email" class="form-control" id="email" required data-validation-required-message="Please enter your email address.">
+              <label>Reference Material:<div id="fileList"></div></label>
+              <input type="file" multiple class="form-control" id="ReferenceMaterial" name="ReferenceMaterial" onchange="javascript:updateList()">
             </div>
           </div>
           <div class="control-group form-group">
             <div class="controls">
-              <label>Reference Material:</label>
-              <input type="email" class="form-control" id="email" required data-validation-required-message="Please enter your email address.">
-            </div>
-          </div>
-          <div class="control-group form-group">
-            <div class="controls">
-              <label>Project Description:</label>
-              <textarea rows="10" cols="100" class="form-control" id="message" required data-validation-required-message="Please enter your message" maxlength="999" style="resize:none"></textarea>
+              <label>Bounty Description:</label>
+              <textarea rows="10" cols="100" class="form-control" id="BountyDescription" name="BountyDescription" required data-validation-required-message="Please enter your message" rows="5" maxlength="999" style="resize:none"></textarea>
             </div>
           </div>
           <div id="success"></div>
@@ -132,12 +110,10 @@
   </div>
   <!-- /.container -->
 
-  <!-- /.container -->
-
   <!-- Footer -->
   <footer class="py-5 bg-dark">
     <div id="container">
-      <p class="m-0 text-center text-white">Copyright &copy; MakUrSpace 2021</p>
+      <p class="m-0 text-center text-white">Copyright &copy; MakUrSpace, LLC 2021</p>
     </div>
   </footer>
 

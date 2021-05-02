@@ -1,13 +1,15 @@
 from time import sleep
 import json
-from dataclasses import dataclass
+from dataclasses import dataclass, asdict
 from urllib.parse import unquote_plus
 from base64 import b64decode
+from typing import ClassVar
 
 from LambdaPage import LambdaPage
 from murdaws import murd_ddb as mddb
 from requests_toolbelt.multipart import MultipartDecoder
 import s3
+import ses
 
 
 mddb.ddb_murd_prefix = "musbb_murd_"
@@ -25,24 +27,31 @@ class Bounty:
     BountyName: str
     Benefactor: str
     Contact: str
-    TemplateProject: str
     BountyDescription: str
     ReferenceMaterial: list
-
-    def to_dict(self):
-        return {key: attr if isinstance((attr := getattr(self, key)), str) else json.dumps(attr)
-                for key in self.__annotations__}
+    TemplateProject: str
+    RequestedMaker: str = ""
+    State: str = "submitted"
+    states: ClassVar = ["submitted", "confirmed", "called", "claimed"]
 
     @classmethod
     def from_m(cls, m):
         bounty = cls(**{k: v for k, v in m.items() if k not in [mddb.group_key, mddb.sort_key]})
-        bounty.ReferenceMaterial = json.loads(bounty.ReferenceMaterial)
         return bounty
+
+    def asdict(self):
+        return asdict(self)
+
+
+def bounty_exists(bounty):
+    for group in Bounty.states:
+        if murd.read(group=group, sort=bounty.BountyName):
+            return group
 
 
 def get_bounty_board(event):
-    bounties = murd.read(group="bounty", limit=200)
-    return 200, [Bounty.from_m(bounty).to_dict() for bounty in bounties]
+    bounties = murd.read(group="confirmed", limit=200)
+    return 200, [Bounty.from_m(bounty).asdict() for bounty in bounties]
 
 
 def get_bounty(bounty_name):
@@ -51,23 +60,22 @@ def get_bounty(bounty_name):
 
 def handle_get_bounty(event):
     bounty_name = unquote_plus(event['pathParameters']['bounty_name'])
-    return 200, get_bounty(bounty_name).to_dict()
+    return 200, get_bounty(bounty_name).asdict()
+
+    return False
 
 
-def write_bounty(new_bounty):
+def write_bounty(new_bounty, group="bounty"):
     # Update server data
-    try:
-        get_bounty(new_bounty.BountyName)
+    if bounty_exists(new_bounty):
         print(f"Bounty {new_bounty.BountyName} already exists")
         return False
-    except IndexError:
-        pass
 
-    murd.update([{**{mddb.group_key: "bounty",
+    murd.update([{**{mddb.group_key: group,
                      mddb.sort_key: new_bounty.BountyName},
-                  **new_bounty.to_dict()}])
+                  **new_bounty.asdict()}])
     # TODO: read back after write to test for success
-    recovered_bounty = Bounty.from_m(murd.read_first(group="bounty", sort=new_bounty.BountyName))
+    recovered_bounty = Bounty.from_m(murd.read_first(group=group, sort=new_bounty.BountyName))
     if recovered_bounty == new_bounty:
         return True
     else:
@@ -80,27 +88,6 @@ def write_bounty(new_bounty):
 def handle_new_bounty(event):
     bounty_defn = Bounty(**json.loads(event['body']))
     return 200 if write_bounty(bounty_defn) else 503
-
-
-def serve_bounty_submission(event):
-    return 200, """
-<head>
-  <title>MakUrSpace Project Submission</title>
-</head>
-
-<body>
-  Here's the form
-  <form enctype="multipart/form-data" action="/rest/bounty_form" method="post">
-    Bounty: <input type="float" name="Bounty"><br>
-    Bounty Name: <input type="text" name="BountyName"><br>
-    Benefactor: <input type="text" name="Benefactor"><br>
-    Contact at: <input type="text" name="Contact"><br>
-    Template Project: <input type="text" name="TemplateProject"><br>
-    Bounty Description: <textarea rows="5" cols="50" name="BountyDescription"></textarea><br>
-    Reference Material: <input type="file" name="ReferenceMaterial" multiple><br>
-    <input type="submit"><br>
-</body>
-"""
 
 
 def get_form_name(part):
@@ -129,6 +116,17 @@ bounty_name_map = {
 }
 
 
+def send_bounty_to_contact(new_bounty):
+    with open("email_template.html") as fh:
+        email_template = fh.read()
+
+    for key, value in new_bounty.asdict().items():
+        email_template = email_template.replace(f"{{{key}}}", f"{value}")
+
+    ses.send_email(subject=f"{new_bounty.BountyName} Bounty", sender="commissions@makurspace.com",
+                   contact="hello@makurspace.com", content=email_template)
+
+
 def submit_bounty_form(event):
     new_bounty_defn = {}
     refmat_material = {}
@@ -147,26 +145,27 @@ def submit_bounty_form(event):
         else:
             new_bounty_defn[form_name] = part.content.decode()
 
-    new_bounty = Bounty(**new_bounty_defn)
-    if not write_bounty(new_bounty):
-        return 503, 'Failed to create bounty'
-
     try:
+        new_bounty = Bounty(**new_bounty_defn)
+        if not write_bounty(new_bounty, group="submitted"):
+            return 403, "Failed to submit bounty"
         for refmat, refmat_content in refmat_material.items():
             write_refmat_to_s3(new_bounty.BountyName, refmat, refmat_content)
     except:
         print("Deleting bounty")
-        murd.delete([{mddb.group_key: "bounty", mddb.sort_key: new_bounty.BountyName, **new_bounty_defn}])
+        murd.delete([{mddb.group_key: "submitted", mddb.sort_key: new_bounty.BountyName, **new_bounty_defn}])
         raise
-    print(murd.read(group="bounty", sort=new_bounty.BountyName))
 
-    return 200, ''
+    send_bounty_to_contact(new_bounty)
+
+    with open("bounty_submission_response_template.html", "r") as fh:
+        response_template = fh.read().replace("{benefactor_email}", new_bounty.Contact)
+    return 200, response_template
 
 
 def build_page():
     page = LambdaPage()
-    page.add_endpoint(method="get", path="/rest/bounty_form", func=serve_bounty_submission, content_type="text/html")
-    page.add_endpoint(method="post", path="/rest/bounty_form", func=submit_bounty_form)
+    page.add_endpoint(method="post", path="/rest/bounty_form", func=submit_bounty_form, content_type="text/html")
     page.add_endpoint(method="post", path="/rest/bountyboard", func=handle_new_bounty)
     page.add_endpoint(method="get", path="/rest/bountyboard/{bounty_name}", func=handle_get_bounty)
     page.add_endpoint(method="get", path="/rest/bountyboard", func=get_bounty_board)
@@ -174,7 +173,8 @@ def build_page():
 
 
 def lambda_handler(event, context):
-    print(f"Handling event: {str(event)}")
+    print(f"Handling event: {str(event)[:500]}")
+    s3.write("last_request.json", json.dumps(event).encode())
     page = build_page()
     results = page.handle_request(event)
     print(results['statusCode'])
