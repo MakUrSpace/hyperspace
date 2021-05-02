@@ -65,7 +65,7 @@ def handle_get_bounty(event):
     return False
 
 
-def write_bounty(new_bounty, group="bounty"):
+def write_bounty(new_bounty, group="confirmed"):
     # Update server data
     if bounty_exists(new_bounty):
         print(f"Bounty {new_bounty.BountyName} already exists")
@@ -83,11 +83,6 @@ def write_bounty(new_bounty, group="bounty"):
         print(recovered_bounty)
         print(new_bounty)
         return False
-
-
-def handle_new_bounty(event):
-    bounty_defn = Bounty(**json.loads(event['body']))
-    return 200 if write_bounty(bounty_defn) else 503
 
 
 def get_form_name(part):
@@ -166,7 +161,6 @@ def submit_bounty_form(event):
 def build_page():
     page = LambdaPage()
     page.add_endpoint(method="post", path="/rest/bounty_form", func=submit_bounty_form, content_type="text/html")
-    page.add_endpoint(method="post", path="/rest/bountyboard", func=handle_new_bounty)
     page.add_endpoint(method="get", path="/rest/bountyboard/{bounty_name}", func=handle_get_bounty)
     page.add_endpoint(method="get", path="/rest/bountyboard", func=get_bounty_board)
     return page
