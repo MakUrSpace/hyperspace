@@ -16,6 +16,7 @@ def send_email(subject, sender, contact, content, content_type="html"):
     message.attach(body)
 
     try:
+        print(f"Sending email to {contact}")
         result = sesc.send_raw_email(
             Source=sender, Destinations=[contact], RawMessage={"Data": message.as_string()}
         )

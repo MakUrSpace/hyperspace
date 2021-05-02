@@ -37,13 +37,13 @@ def list_contents(s3_path):
 
 
 def write(s3_path, content):
-    print(f"Writing {bucket}/{s3_path}")
+    print(f"Writing s3://{bucket}/{s3_path}")
     content_bytes = BytesIO(content)
     boto3.client("s3").upload_fileobj(
         Fileobj=content_bytes,
         Bucket=bucket,
         Key=s3_path,
-        ExtraArgs={'ACL':'public-read'})
+        ExtraArgs={'ACL': 'public-read'})
 
 
 def write_json(s3_path, content):
