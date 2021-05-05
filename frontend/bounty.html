@@ -18,21 +18,6 @@
 
   <link rel="shortcut icon" href="MakUrSpace_Logo.png" type="image/x-icon">
 
-  <script>
-    updateList = function() {
-        var input = document.getElementById('ReferenceMaterial');
-        var output = document.getElementById('fileList');
-        var children = "";
-        for (var i = 0; i < input.files.length; ++i) {
-            children += '<li>' + input.files.item(i).name + '</li>';
-        }
-        if (input.files.length > 1) {
-          output.innerHTML = '<ul>'+children+'</ul>';
-        } else {
-          output.innerHTML = ''
-        }
-    }
-  </script>
 </head>
 
 <body>
@@ -49,10 +34,11 @@
       <div class="col-lg-8 mb-4">
         <h3>Submit a Bounty!</h3>
         <form name="sentMessage" id="contactForm" novalidate method="post" action="/rest/bounty_form" enctype="multipart/form-data">
-          <div class="control-group form-group">
+          <div class="control-group form-group input-group">
             <div class="controls">
               <label>Bounty Reward:</label>
-              $<input type="float" class="form-control" id="Bounty" name="Bounty" required data-validation-required-message="Please enter your name.">
+              <span class="input-group-addon">$</span>
+              <input type="float" class="form-control" id="Bounty" name="Bounty" required data-validation-required-message="Please enter your name.">
               <p class="help-block"></p>
             </div>
           </div>
@@ -120,6 +106,22 @@
   <!-- Bootstrap core JavaScript -->
   <script src="vendor/jquery/jquery.min.js"></script>
   <script src="vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
+
+  <script>
+    updateList = function() {
+        var input = document.getElementById('ReferenceMaterial');
+        var output = document.getElementById('fileList');
+        var children = "";
+        for (var i = 0; i < input.files.length; ++i) {
+            children += '<li>' + input.files.item(i).name + '</li>';
+        }
+        if (input.files.length > 1) {
+          output.innerHTML = '<ul>'+children+'</ul>';
+        } else {
+          output.innerHTML = ''
+        }
+    }
+  </script>
 
 </body>
 
