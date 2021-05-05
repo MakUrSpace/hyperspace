@@ -184,7 +184,6 @@ def confirm_bounty(event):
     confirmation_id = event['pathParameters']['bounty_confirmation_id']
     confirmationm = murd.read_first(group="confirmations", sort=confirmation_id)
     bounty = get_bounty(confirmationm['BountyName'])
-    assert bounty.State == 'submitted'
     with open("confirm_bounty.html", "r") as fh:
         confirmation_template = fh.read()
     confirmation_template = confirmation_template.replace("{bounty_confirmation_id}", confirmation_id)
