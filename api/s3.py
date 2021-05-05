@@ -3,12 +3,12 @@ from io import BytesIO
 import boto3
 
 
-bucket = "makurspace-static-assets"
+default_bucket = "makurspace-static-assets"
 
 
 def retrieve(s3_path):
     print(f"Retrieving {s3_path}")
-    s3b = boto3.resource("s3").Bucket(bucket)
+    s3b = boto3.resource("s3").Bucket(default_bucket)
     contents = BytesIO()
     s3b.download_fileobj(s3_path, contents)
     contents.seek(0)
@@ -25,18 +25,19 @@ def retrieve_presigned_url(s3_path):
     s3c = boto3.client("s3")
     url = s3c.generate_presigned_url('get_object',
                                      ExpiresIn=1800,
-                                     Params={'Bucket': bucket,
+                                     Params={'Bucket': default_bucket,
                                              'Key': s3_path})
     return url
 
 
 def list_contents(s3_path):
     print(f"Listing {s3_path}")
-    s3b = boto3.resource("s3").Bucket(bucket)
+    s3b = boto3.resource("s3").Bucket(default_bucket)
     return [content.key[len(s3_path):] for content in s3b.objects.filter(Prefix=s3_path)]
 
 
-def write(s3_path, content):
+def write(s3_path, content, bucket=None):
+    bucket = bucket if bucket is not None else default_bucket
     print(f"Writing s3://{bucket}/{s3_path}")
     content_bytes = BytesIO(content)
     boto3.client("s3").upload_fileobj(
@@ -53,5 +54,5 @@ def write_json(s3_path, content):
 
 def delete(s3_path):
     print(f"Deleting {s3_path}")
-    s3b = boto3.resource("s3").Bucket(bucket)
+    s3b = boto3.resource("s3").Bucket(default_bucket)
     s3b.delete_objects(Delete={"Objects": [{"Key": s3_path}]})

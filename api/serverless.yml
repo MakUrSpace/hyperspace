@@ -23,11 +23,13 @@ provider:
       Resource: 'arn:aws:s3:::makurspace-static-assets/*'
     - Effect: Allow
       Action:
+        - s3:PutObject
+      Resource: 'arn:aws:s3:::makurspace/last_request.json'
+    - Effect: Allow
+      Action:
         - ses:SendEmail
         - ses:SendRawEmail
       Resource: '*'
-
-
 
 functions:
   hyperspace_api:
@@ -46,12 +48,17 @@ functions:
           path: /rest/bountyboard
           method: post
       - http:
+          path: /rest/bountyboard
+          method: get
+      - http:
           path: /rest/bountyboard/{bounty_name}
           method: get
       - http:
-          path: /rest/bountyboard
+          path: /rest/bounty_confirmation/{bounty_confirmation_id}
           method: get
-
+      - http:
+          path: /rest/bounty_confirmation/{bounty_confirmation_id}
+          method: post
 
 custom:
   pythonRequirements:
