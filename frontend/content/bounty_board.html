@@ -21,39 +21,24 @@
 </head>
 <body>
   <!-- Page Content -->
-  <div class="container">
-    <!-- Bounty Board Section -->
-    <h2>MakUrSpace Bounty Board</h2>
-
-    <div class="row" id="bountyboard">
+  <div class="container-fluid">
+    <div class="row justify-content-center" id="bountyboard">
       Loading...
     </div>
-    <!-- /.row -->
-
   </div>
-  <!-- /.container -->
-
-  <!-- Footer -->
-  <footer class="py-5 bg-dark">
-    <div id="container">
-      <p class="m-0 text-center text-white">Copyright &copy; MakUrSpace, LLC 2021</p>
-    </div>
-  </footer>
 
   <!-- Bootstrap core JavaScript -->
   <script src="/vendor/jquery/jquery.min.js"></script>
   <script src="/vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
 
   <template id="bounty-template">
-    <div class="col-lg-4 col-sm-6 portfolio-item">
-      <div class="card h-100">
-        <a class="bounty-link" href="#" target="_top"><img class="card-img-top" src="http://placehold.it/700x400" alt=""></a>
-        <div class="card-body">
-          <h4 class="card-title">
-            <a class="bounty-link" href="#" id="card-title-link" target="_top"></a>
-          </h4>
-          <p class="card-text"></p>
-        </div>
+    <div class="card col-lg-3 col-md-4 col-sm-6 bounty-item mx-3 mb-3">
+      <a class="bounty-link" href="#" target="_top"><img class="card-img-top" src="http://placehold.it/700x400" alt=""></a>
+      <div class="card-body">
+        <h4 class="card-title">
+          <a class="bounty-link" href="#" id="card-title-link" target="_top"></a>
+        </h4>
+        <p class="card-text"></p>
       </div>
     </div>
   </template>
