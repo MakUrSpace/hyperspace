@@ -11,139 +11,62 @@
   <title>MakUrSpace</title>
 
   <!-- Bootstrap core CSS -->
-  <link href="vendor/bootstrap/css/bootstrap.min.css" rel="stylesheet">
+  <link href="/vendor/bootstrap/css/bootstrap.min.css" rel="stylesheet">
 
   <!-- Custom styles for this template -->
-  <link href="css/makurspace.css" rel="stylesheet">
+  <link href="/css/makurspace.css" rel="stylesheet">
 
   <link rel="shortcut icon" href="MakUrSpace_Logo.png" type="image/x-icon">
 
 </head>
 
 <body>
-
   <!-- Navigation -->
-  <object data="/navbar.html" width="100%"></object>
+  <div class="container-fluid h-100">
+    <object data="/navbar.html" width="100%"></object>
 
-  <header>
-    <div id="carouselExampleIndicators" class="carousel slide" data-ride="carousel">
-      <ol class="carousel-indicators">
-        <li data-target="#carouselExampleIndicators" data-slide-to="0" class="active"></li>
-        <li data-target="#carouselExampleIndicators" data-slide-to="1"></li>
-        <li data-target="#carouselExampleIndicators" data-slide-to="2"></li>
-      </ol>
-      <div class="carousel-inner" role="listbox">
-        <!-- Slide One - Set the background image for this slide in the line below -->
-        <div class="carousel-item active" style="background-image: url('3.jpg')">
-          <div class="carousel-caption d-none d-md-block">
-            <h3>Welcome to MakUrSpace</h3>
-            <p>This is a description for the first slide.</p>
+    <header>
+      <div id="carouselExampleIndicators" class="carousel slide" data-ride="carousel">
+        <ol class="carousel-indicators">
+          <li data-target="#carouselExampleIndicators" data-slide-to="0" class="active"></li>
+          <li data-target="#carouselExampleIndicators" data-slide-to="1"></li>
+          <li data-target="#carouselExampleIndicators" data-slide-to="2"></li>
+        </ol>
+        <div class="carousel-inner" role="listbox">
+          <div class="carousel-item active" style="background-image: url('MakUrSpace_Logo.png')">
+            <div class="carousel-caption d-none d-md-block">
+              <h3>Welcome to MakUrSpace</h3>
+              <p>Create Your World</p>
+            </div>
+          </div>
+          <div class="carousel-item" style="background-image: url('1.jpg">
+            <div class="carousel-caption d-none d-md-block">
+              <h3>Beholder Set</h3>
+              <p>It gets shot in the head, but rises again</p>
+            </div>
+          </div>
+          <div class="carousel-item" style="background-image: url('2.jpg')">
+            <div class="carousel-caption d-none d-md-block">
+              <h3>Young Silver Dragon</h3>
+            </div>
           </div>
         </div>
-        <!-- Slide Two - Set the background image for this slide in the line below -->
-        <div class="carousel-item" style="background-image: url('1.jpg">
-          <div class="carousel-caption d-none d-md-block">
-            <h3>Second Slide</h3>
-            <p>This is a description for the second slide.</p>
-          </div>
-        </div>
-        <!-- Slide Three - Set the background image for this slide in the line below -->
-        <div class="carousel-item" style="background-image: url('2.jpg')">
-          <div class="carousel-caption d-none d-md-block">
-            <h3>Third Slide</h3>
-            <p>This is a description for the third slide.</p>
-          </div>
-        </div>
+        <a class="carousel-control-prev" href="#carouselExampleIndicators" role="button" data-slide="prev">
+          <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+          <span class="sr-only">Previous</span>
+        </a>
+        <a class="carousel-control-next" href="#carouselExampleIndicators" role="button" data-slide="next">
+          <span class="carousel-control-next-icon" aria-hidden="true"></span>
+          <span class="sr-only">Next</span>
+        </a>
       </div>
-      <a class="carousel-control-prev" href="#carouselExampleIndicators" role="button" data-slide="prev">
-        <span class="carousel-control-prev-icon" aria-hidden="true"></span>
-        <span class="sr-only">Previous</span>
-      </a>
-      <a class="carousel-control-next" href="#carouselExampleIndicators" role="button" data-slide="next">
-        <span class="carousel-control-next-icon" aria-hidden="true"></span>
-        <span class="sr-only">Next</span>
-      </a>
+    </header>
+
+    <h2>MakUrSpace Bounty Board</h2>
+    <div class="container-fluid vh-100 w-100">
+      <object data="/content/bounty_board.html" height="100%" width="100%"></object>
     </div>
-  </header>
-
-  <!-- Page Content -->
-  <div class="container">
-    <!-- Bounty Board Section -->
-    <h2>Bounty Board</h2>
-
-    <div class="row" id="bountyboard">
-      Loading...
-    </div>
-    <!-- /.row -->
-
   </div>
-  <!-- /.container -->
-
-  <!-- Footer -->
-  <footer class="py-5 bg-dark">
-    <div id="container">
-      <p class="m-0 text-center text-white">Copyright &copy; MakUrSpace, LLC 2021</p>
-    </div>
-  </footer>
-
-  <!-- Bootstrap core JavaScript -->
-  <script src="vendor/jquery/jquery.min.js"></script>
-  <script src="vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
-  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-
-  <template id="bounty-template">
-    <div class="col-lg-4 col-sm-6 portfolio-item">
-      <div class="card h-100">
-        <a class="bounty-link" href="#"><img class="card-img-top" src="http://placehold.it/700x400" alt=""></a>
-        <div class="card-body">
-          <h4 class="card-title">
-            <a class="bounty-link" href="#" id="card-title-link"></a>
-          </h4>
-          <p class="card-text"></p>
-        </div>
-      </div>
-    </div>
-  </template>
-
-  <script>
-    // When document loads
-    $(document).ready(function(){
-      // Request bountyboard JSON document
-      $.getJSON("/rest/bountyboard", function(data, status, xhr){
-        if (status === "success") {
-          // For each item in bountyboard JSON document
-          var portfolio_list = document.querySelector("#bountyboard")
-          portfolio_list.textContent = ''
-          $.each(data, function(i, elem){
-            var portfolio_list = document.querySelector("#bountyboard")
-            var template = document.querySelector("#bounty-template")
-            var clone = template.content.cloneNode(true)
-            var card_title = clone.querySelector("#card-title-link")
-            var card_image = clone.querySelector(".card-img-top")
-            var card_text = clone.querySelector(".card-text")
-
-            //Function to find a image in Bounty.ReferenceMaterial
-            function sel_jpg_or_png(selected, candidate){
-              if (['jpg', 'png', 'jpeg'].includes(candidate.split('.').pop())){
-	        return `/bountyboard/${elem.BountyName}/${candidate}`
-              }else{
-                return selected
-              }
-            }
-
-            // Fill card template with bounty data
-            card_title.textContent = elem.BountyName
-            card_image.src = elem.ReferenceMaterial.reduce(sel_jpg_or_png, "1.jpg")
-            card_text.textContent = elem.BountyDescription
-
-            // Add filled card template to portfolio list
-            portfolio_list.appendChild(clone)            
-          })
-        }
-      })
-    });
-  </script>
-
 </body>
 
 </html>

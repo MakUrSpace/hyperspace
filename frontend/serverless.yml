@@ -24,7 +24,7 @@ custom:
   s3Sync:
     - bucketName: makurspace-static-assets
       localDir: ./
-      deleteRemoved: true
+      deleteRemoved: false
       acl: public-read
 
 

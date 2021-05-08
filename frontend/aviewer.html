@@ -1,0 +1,17 @@
+<html>
+<head>
+  <title>My A-Frame Scene</title>
+  <script src="https://aframe.io/releases/1.2.0/aframe.min.js"></script>
+  <script src="/js/stlloader.js"></script>
+</head>
+
+<body>
+  <a-scene>
+    <a-assets>
+        <a-asset-item response-type="arraybuffer" id="vat_drain_model" src="/catalog/vat_drain/VatDrain.stl"></a-asset-item>
+    </a-assets>
+    <a-entity stl-model="src: #vat_drain_model" position="0 0 -20" rotation="-45 15 0" id="vat_drain" color="#FFC65D"></a-entity>
+    <a-sky color="#aeaeea"></a-sky>
+  </a-scene>
+</body>
+</html>
