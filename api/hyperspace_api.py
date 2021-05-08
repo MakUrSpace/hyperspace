@@ -5,6 +5,7 @@ from dataclasses import dataclass, asdict
 from urllib.parse import unquote_plus
 from base64 import b64decode
 from typing import ClassVar
+from datetime import datetime
 
 from LambdaPage import LambdaPage
 from murdaws import murd_ddb as mddb
@@ -16,10 +17,13 @@ import ses
 mddb.ddb_murd_prefix = "musbb_murd_"
 try:
     murd = mddb.DDBMurd("BountyBoard")
+    purchase_murd = mddb.DDBMurd("purchases")
 except Exception:
     mddb.DDBMurd.create_murd_table("BountyBoard")
+    mddb.DDBMurd.create_murd_table("purchases")
     sleep(10)
     murd = mddb.DDBMurd("BountyBoard")
+    purchase_murd = mddb.DDBMurd("purchases")
 
 
 @dataclass
@@ -38,22 +42,36 @@ class Bounty:
 
     @classmethod
     def fromm(cls, m):
-        bounty = cls(**{k: v for k, v in m.items() if k not in [mddb.group_key, mddb.sort_key]})
+        bounty = cls(**{k: v for k, v in m.items() if k not in [mddb.group_key, mddb.sort_key, "CREATE_TIME"]})
         return bounty
 
     def asm(self):
         return {**{mddb.group_key: self.State,
-                   mddb.sort_key: self.BountyName},
+                   mddb.sort_key: self.BountyName,
+                   "CREATE_TIME": datetime.utcnow().isoformat()},
                 **self.asdict()}
 
     def asdict(self):
         return asdict(self)
 
+    def store(self):
+        murd.update([self.asm()])
 
-def bounty_exists(bounty):
-    for group in Bounty.states:
-        if murd.read(group=group, sort=bounty.BountyName):
-            return group
+    @property
+    def primary_image(self):
+        formats = ["jpg", "jpeg", "png"]
+        for refmat in self.ReferenceMaterial:
+            filetype = refmat.split(".")[-1]
+            if filetype in formats:
+                return refmat
+        return None
+
+
+def bounty_exists(bounty, all_states=False):
+    check_states = [bounty.State] if not all_states else Bounty.states[::-1]
+    for state in check_states:
+        if murd.read(group=state, sort=bounty.BountyName):
+            return state
 
 
 def get_bounty_board(event):
@@ -62,7 +80,7 @@ def get_bounty_board(event):
 
 
 def get_bounty(bounty_name):
-    for state in Bounty.states:
+    for state in Bounty.states[::-1]:
         try:
             return Bounty.fromm(murd.read(group=state, sort=bounty_name)[0])
         except Exception:
@@ -77,23 +95,20 @@ def handle_get_bounty(event):
     return False
 
 
-def write_bounty(new_bounty, group="confirmed"):
-    # Update server data
-    new_bounty.State = group
-    if bounty_exists(new_bounty):
-        print(f"Bounty {new_bounty.BountyName} already exists")
-        return False
+def get_rendered_bounty(event):
+    bounty_name = unquote_plus(event['pathParameters']['bounty_name'])
+    bounty = get_bounty(bounty_name)
 
-    murd.update([new_bounty.asm()])
-    # TODO: read back after write to test for success
-    recovered_bounty = Bounty.fromm(murd.read_first(group=group, sort=new_bounty.BountyName))
-    if recovered_bounty == new_bounty:
-        return True
-    else:
-        print("Recovered bounty does not match intended value")
-        print(recovered_bounty)
-        print(new_bounty)
-        return False
+    with open("bountycard.html", "r") as fh:
+        template = fh.read()
+
+    for pattern, replacement in {
+            "{bounty_name}": bounty.BountyName,
+            "{primary_image}": f"/bountyboard/{bounty.BountyName}/{bounty.primary_image}",
+            "{bounty_description}": bounty.BountyDescription}.items():
+        template = template.replace(pattern, replacement)
+
+    return 200, template
 
 
 def get_form_name(part):
@@ -145,6 +160,7 @@ def send_bounty_to_contact(new_bounty):
 
 
 def submit_bounty_form(event):
+    s3.write(f"submissions/sub-{uuid4()}", json.dumps(event).encode(), "makurspace")
     new_bounty_defn = {}
     refmat_material = {}
 
@@ -155,23 +171,23 @@ def submit_bounty_form(event):
     for part in multipart_decoder.parts:
         form_name = get_form_name(part)
         form_name = form_name if form_name not in bounty_name_map else bounty_name_map[form_name]
+        assert form_name != 'State'
         if form_name == 'ReferenceMaterial':
             filename = get_refmat_filename(part)
             new_bounty_defn['ReferenceMaterial'] = [filename]
-            refmat_material[filename] = b64decode(part.content)
+            refmat_material[filename] = part.content
         else:
             new_bounty_defn[form_name] = part.content.decode()
 
+    new_bounty = Bounty(**new_bounty_defn)
     try:
-        new_bounty = Bounty(**new_bounty_defn)
-        if not write_bounty(new_bounty, group="submitted"):
-            return 403, "Failed to submit bounty"
+        new_bounty.store()
         for refmat, refmat_content in refmat_material.items():
             write_refmat_to_s3(new_bounty.BountyName, refmat, refmat_content)
-    except:
+    except Exception:
         print("Deleting bounty")
-        murd.delete([{mddb.group_key: "submitted", mddb.sort_key: new_bounty.BountyName, **new_bounty_defn}])
-        raise
+        murd.delete([new_bounty.asm()])
+        return 403, "Failed to submit bounty"
 
     send_bounty_to_contact(new_bounty)
 
@@ -183,26 +199,64 @@ def submit_bounty_form(event):
 def confirm_bounty(event):
     confirmation_id = event['pathParameters']['bounty_confirmation_id']
     confirmationm = murd.read_first(group="confirmations", sort=confirmation_id)
-    bounty = get_bounty(confirmationm['BountyName'])
+    get_bounty(confirmationm['BountyName'])
     with open("confirm_bounty.html", "r") as fh:
         confirmation_template = fh.read()
     confirmation_template = confirmation_template.replace("{bounty_confirmation_id}", confirmation_id)
     return 200, confirmation_template
 
 
+@dataclass
+class PurchaseConfirmation:
+    create_time: str
+    update_time: str
+    id: str
+    intent: str
+    status: str
+    payer: dict
+    purchase_units: list
+    links: list
+
+    def asm(self):
+        return {**{mddb.group_key: "purchase_confirmation",
+                   mddb.sort_key: self.id},
+                **self.asdict()}
+
+    @classmethod
+    def fromm(cls, m):
+        bounty = cls(**{k: v for k, v in m.items() if k not in [mddb.group_key, mddb.sort_key]})
+        return bounty
+
+    def asdict(self):
+        return asdict(self)
+
+    def store(self):
+        purchase_murd.update([self.asm()])
+
+
+def bounty_confirmed(event):
+    confirmation_id = event['pathParameters']['bounty_confirmation_id']
+    confirmationm = murd.read_first(group="confirmations", sort=confirmation_id)
+    bounty = get_bounty(confirmationm['BountyName'])
+    purchase_confirmation = PurchaseConfirmation(**json.loads(event['body']))
+    purchase_confirmation.store()
+    bounty.State = "confirmed"
+    bounty.store()
+
+
 def build_page():
     page = LambdaPage()
     page.add_endpoint(method="post", path="/rest/bounty_form", func=submit_bounty_form, content_type="text/html")
     page.add_endpoint(method="get", path="/rest/bounty_confirmation/{bounty_confirmation_id}", func=confirm_bounty, content_type="text/html")
-    page.add_endpoint(method="post", path="/rest/bounty_confirmation/{bounty_confirmation_id}", func=confirm_bounty, content_type="text/html")
+    page.add_endpoint(method="post", path="/rest/bounty_confirmation/{bounty_confirmation_id}", func=bounty_confirmed, content_type="text/html")
     page.add_endpoint(method="get", path="/rest/bountyboard/{bounty_name}", func=handle_get_bounty)
+    page.add_endpoint(method="get", path="/rest/rendered_bounty/{bounty_name}", func=get_rendered_bounty, content_type="text/html")
     page.add_endpoint(method="get", path="/rest/bountyboard", func=get_bounty_board)
     return page
 
 
 def lambda_handler(event, context):
-    print(f"Handling event: {str(event)[:1000]}")
-    # s3.write("last_request.json", json.dumps(event).encode(), "makurspace")
+    print(f"Handling {event['path']} + {event['httpMethod']}")
     page = build_page()
     results = page.handle_request(event)
     print(results['statusCode'])

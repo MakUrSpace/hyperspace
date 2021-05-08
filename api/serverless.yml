@@ -23,6 +23,10 @@ provider:
       Resource: 'arn:aws:s3:::makurspace-static-assets/*'
     - Effect: Allow
       Action:
+        - s3:*
+      Resource: 'arn:aws:s3:::makurspace/*'
+    - Effect: Allow
+      Action:
         - s3:PutObject
       Resource: 'arn:aws:s3:::makurspace/last_request.json'
     - Effect: Allow
@@ -42,9 +46,6 @@ functions:
           path: /rest/bounty_form
           method: post
       - http:
-          path: /rest/bounty_form
-          method: get
-      - http:
           path: /rest/bountyboard
           method: post
       - http:
@@ -52,6 +53,9 @@ functions:
           method: get
       - http:
           path: /rest/bountyboard/{bounty_name}
+          method: get
+      - http:
+          path: /rest/rendered_bounty/{bounty_name}
           method: get
       - http:
           path: /rest/bounty_confirmation/{bounty_confirmation_id}
