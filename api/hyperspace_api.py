@@ -28,6 +28,7 @@ except Exception:
 
 @dataclass
 class Bounty:
+    BountyId: str
     Bounty: str
     BountyName: str
     Benefactor: str
@@ -42,12 +43,14 @@ class Bounty:
 
     @classmethod
     def fromm(cls, m):
-        bounty = cls(**{k: v for k, v in m.items() if k not in [mddb.group_key, mddb.sort_key, "CREATE_TIME"]})
+        kwargs = {k: v for k, v in m.items() if k not in [mddb.group_key, mddb.sort_key, "CREATE_TIME"]}
+        kwargs['BountyId'] = kwargs['BountyName'] if 'BountyId' not in m else kwargs['BountyId']
+        bounty = cls(**kwargs)
         return bounty
 
     def asm(self):
         return {**{mddb.group_key: self.State,
-                   mddb.sort_key: self.BountyName,
+                   mddb.sort_key: self.BountyId,
                    "CREATE_TIME": datetime.utcnow().isoformat()},
                 **self.asdict()}
 
@@ -79,25 +82,25 @@ def get_bounty_board(event):
     return 200, [Bounty.fromm(bounty).asdict() for bounty in bounties]
 
 
-def get_bounty(bounty_name):
+def get_bounty(bounty_id):
     for state in Bounty.states[::-1]:
         try:
-            return Bounty.fromm(murd.read(group=state, sort=bounty_name)[0])
+            return Bounty.fromm(murd.read(group=state, sort=bounty_id)[0])
         except Exception:
             pass
-    raise Exception(f"{bounty_name} not found")
+    raise Exception(f"{bounty_id} not found")
 
 
 def handle_get_bounty(event):
-    bounty_name = unquote_plus(event['pathParameters']['bounty_name'])
-    return 200, get_bounty(bounty_name).asdict()
+    bounty_id = unquote_plus(event['pathParameters']['bounty_id'])
+    return 200, get_bounty(bounty_id).asdict()
 
     return False
 
 
 def get_rendered_bounty(event):
-    bounty_name = unquote_plus(event['pathParameters']['bounty_name'])
-    bounty = get_bounty(bounty_name)
+    bounty_id = unquote_plus(event['pathParameters']['bounty_id'])
+    bounty = get_bounty(bounty_id)
 
     with open("bountycard.html", "r") as fh:
         template = fh.read()
@@ -179,7 +182,7 @@ def submit_bounty_form(event):
         else:
             new_bounty_defn[form_name] = part.content.decode()
 
-    new_bounty = Bounty(**new_bounty_defn)
+    new_bounty = Bounty(**new_bounty_defn, BountyId=str(uuid4()))
     try:
         new_bounty.store()
         for refmat, refmat_content in refmat_material.items():
@@ -244,13 +247,74 @@ def bounty_confirmed(event):
     bounty.store()
 
 
+def get_refmat_surl(event):
+    bounty_id = event['pathParameters']['bounty_id']
+    refmat_filename = event['pathParameters']['refmat_filename']
+    bounty = get_bounty(bounty_id)
+    s3_path = f"bountyboard/{bounty.BountyId}/{refmat_filename}"
+    url = s3.presigned_write_url(s3_path)
+    return 200, url
+
+
+def render_refmat_upload_script(event):
+    return 200, """
+var refmat = document.getElementById('ReferenceMaterial')
+
+function updateList(){
+    var output = document.getElementById('reference_material_file_list')
+    var children = "";
+    for (var i = 0; i < refmat.files.length; ++i) {
+        children += '<li>' + refmat.files.item(i).name + '</li>'
+    }
+    if (refmat.files.length > 1) {
+      output.innerHTML = '<ul>'+children+'</ul>';
+    } else {
+      output.innerHTML = ''
+    }
+}
+
+function upload_reference_material(){
+  updateList()
+  var refmat = document.getElementById('ReferenceMaterial')
+
+  for (var form_data, i = 0; i < refmat.files.length; i++){
+    form_data = new FormData()
+    form_data.append("", refmat.files[i], refmat.files[i].name)
+    $.ajax({
+        url : `/rest/bounty_form/{bounty_id}/${refmat.files[i].name}`,
+        type : "GET",
+        data : form_data,
+        mimeType : "multipart/form-data",
+        cache : false,
+        contentType : false,
+        processData : false
+      }).done(function(response){
+        $.ajax({
+        url : response['upload_url'],
+        type : "PUT",
+        data : form_data,
+        mimeType : "multipart/form-data",
+        cache : false,
+        contentType : false,
+        processData : false
+      }).done(function(response){
+        console.log(response)
+      })
+    })
+  }
+}
+""".replace("{bounty_id}", str(uuid4()))
+
+
 def build_page():
     page = LambdaPage()
+    page.add_endpoint(method="get", path="/rest/upload_reference_material.js", func=render_refmat_upload_script, content_type="text/javascript")
+    page.add_endpoint(method="get", path="/rest/bounty_form/{bounty_id}/{refmat_filename}", func=get_refmat_surl)
     page.add_endpoint(method="post", path="/rest/bounty_form", func=submit_bounty_form, content_type="text/html")
     page.add_endpoint(method="get", path="/rest/bounty_confirmation/{bounty_confirmation_id}", func=confirm_bounty, content_type="text/html")
     page.add_endpoint(method="post", path="/rest/bounty_confirmation/{bounty_confirmation_id}", func=bounty_confirmed, content_type="text/html")
-    page.add_endpoint(method="get", path="/rest/bountyboard/{bounty_name}", func=handle_get_bounty)
-    page.add_endpoint(method="get", path="/rest/rendered_bounty/{bounty_name}", func=get_rendered_bounty, content_type="text/html")
+    page.add_endpoint(method="get", path="/rest/bountyboard/{bounty_id}", func=handle_get_bounty)
+    page.add_endpoint(method="get", path="/rest/rendered_bounty/{bounty_id}", func=get_rendered_bounty, content_type="text/html")
     page.add_endpoint(method="get", path="/rest/bountyboard", func=get_bounty_board)
     return page
 

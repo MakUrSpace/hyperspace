@@ -24,11 +24,7 @@ provider:
     - Effect: Allow
       Action:
         - s3:*
-      Resource: 'arn:aws:s3:::makurspace/*'
-    - Effect: Allow
-      Action:
-        - s3:PutObject
-      Resource: 'arn:aws:s3:::makurspace/last_request.json'
+      Resource: 'arn:aws:s3:::makurspace/*''
     - Effect: Allow
       Action:
         - ses:SendEmail
@@ -42,6 +38,12 @@ functions:
     memorySize: 128
     timeout: 30
     events:
+      - http:
+          path: /rest/upload_reference_material.js
+          method: get
+      - http:
+          path: /rest/bounty_form/{bounty_id}/{refmat_filename}
+          method: get
       - http:
           path: /rest/bounty_form
           method: post

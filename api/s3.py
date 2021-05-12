@@ -52,6 +52,15 @@ def write_json(s3_path, content):
     write(s3_path, json.dumps(content))
 
 
+def presigned_write_url(s3_path, bucket=None):
+    bucket = bucket if bucket is not None else default_bucket
+    return boto3.client('s3').generate_presigned_post(
+        Bucket=bucket,
+        Key=s3_path,
+        Conditions=[{"acl": "public-read"}],
+        expiresIn=300)['url']
+
+
 def delete(s3_path):
     print(f"Deleting {s3_path}")
     s3b = boto3.resource("s3").Bucket(default_bucket)
