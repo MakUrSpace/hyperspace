@@ -5,15 +5,10 @@
 
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-  <meta name="description" content="">
-  <meta name="author" content="">
-
-  <title>Bounty</title>
-
-  <!-- Bootstrap core CSS -->
+  <meta name="description" content="MakUrSpace Bounty Submission Form">
+  <meta name="author" content="MakUrSpace, LLC">
+  <title>MakUrSpace Bounty Application</title>
   <link href="vendor/bootstrap/css/bootstrap.min.css" rel="stylesheet">
-
-  <!-- Custom styles for this template -->
   <link href="css/modern-business.css" rel="stylesheet">
 
   <link rel="shortcut icon" href="MakUrSpace_Logo.png" type="image/x-icon">
@@ -23,65 +18,53 @@
 <body>
 
   <!-- Navigation -->
-  <object data="/navbar.html" width="100%"></object>
+  <iframe data="/navbar.html" width="100%"></iframe>
 
   <!-- Page Content -->
 
     <!-- Bounty Form -->
-    <!-- In order to set the email address and subject line for the contact form go to the bin/contact_me.php file. -->
   <div class="container">
     <div class="row">
       <div class="col-lg-8 mb-4">
-        <h3>Submit a Bounty!</h3>
-        <form name="sentMessage" id="contactForm" novalidate method="post" action="/rest/bounty_form" enctype="multipart/form-data">
+        <h2 class="mt-2">Submit a Bounty!</h2>
+        <form name="sentMessage" id="bounty_form" novalidate enctype="multipart/form-data" method="post" action="/rest/bounty_form" enctype="multipart/form-data">
           <div class="control-group form-group input-group">
             <div class="controls">
               <label>Bounty Reward:</label>
-              <span class="input-group-addon">$</span>
-              <input type="float" class="form-control" id="Bounty" name="Bounty" required data-validation-required-message="Please enter your name.">
+              <input type="float" class="form-control" id="Bounty" name="Bounty" required data-validation-required-message="Please enter a bounty reward amount.">
               <p class="help-block"></p>
             </div>
           </div>
           <div class="control-group form-group">
             <div class="controls">
               <label>Bounty Name:</label>
-              <input type="text" class="form-control" id="BountyName" name="BountyName" required data-validation-required-message="Please enter your phone number.">
+              <input type="text" class="form-control" id="BountyName" name="BountyName" required data-validation-required-message="Please enter a unique name for the bounty">
             </div>
           </div>
           <div class="control-group form-group">
             <div class="controls">
               <label>Benefactor:</label>
-              <input type="text" class="form-control" id="Benefactor" name="Benefactor" required data-validation-required-message="Please enter your email address.">
+              <input type="text" class="form-control" id="Benefactor" name="Benefactor" required data-validation-required-message="Please enter a name for the recipient of the bounty">
             </div>
           </div>
           <div class="control-group form-group">
             <div class="controls">
               <label>Contact Benefactor at:</label>
-              <input type="email" class="form-control" id="Contact" name="Contact" required data-validation-required-message="Please enter your email address.">
+              <input type="email" class="form-control" id="Contact" name="Contact" required data-validation-required-message="Please enter an email address for the recipient of the bounty">
             </div>
           </div>
-          <div class="control-group form-group">
-            <div class="controls">
-              <label>Requested Maker:</label>
-              <input type="text" class="form-control" id="RequestedMaker" name="RequestedMaker" required data-validation-required-message="Please enter your email address.">
+            <div class="control-group form-group">
+              <form>
+                <div class="controls">
+                  <label>Reference Material:<div id="reference_material_file_list"></div></label>
+                  <input type="file" multiple class="form-control" id="ReferenceMaterial" name="ReferenceMaterial" onchange="javascript:upload_reference_material()">
+                </div>
+              </form>
             </div>
-          </div>
-          <div class="control-group form-group">
-            <div class="controls">
-              <label>Template Project:</label>
-              <input type="email" class="form-control" id="TemplateProject" name="TemplateProject" required data-validation-required-message="Please enter your email address.">
-            </div>
-          </div>
-          <div class="control-group form-group">
-            <div class="controls">
-              <label>Reference Material:<div id="fileList"></div></label>
-              <input type="file" multiple class="form-control" id="ReferenceMaterial" name="ReferenceMaterial" onchange="javascript:updateList()">
-            </div>
-          </div>
           <div class="control-group form-group">
             <div class="controls">
               <label>Bounty Description:</label>
-              <textarea rows="10" cols="100" class="form-control" id="BountyDescription" name="BountyDescription" required data-validation-required-message="Please enter your message" rows="5" maxlength="999" style="resize:none"></textarea>
+              <textarea rows="10" cols="100" class="form-control" id="BountyDescription" name="BountyDescription" required data-validation-required-message="Please a description of the bounty" rows="5" maxlength="999" style="resize:none"></textarea>
             </div>
           </div>
           <div id="success"></div>
@@ -104,24 +87,9 @@
   </footer>
 
   <!-- Bootstrap core JavaScript -->
-  <script src="vendor/jquery/jquery.min.js"></script>
-  <script src="vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
-
-  <script>
-    updateList = function() {
-        var input = document.getElementById('ReferenceMaterial');
-        var output = document.getElementById('fileList');
-        var children = "";
-        for (var i = 0; i < input.files.length; ++i) {
-            children += '<li>' + input.files.item(i).name + '</li>';
-        }
-        if (input.files.length > 1) {
-          output.innerHTML = '<ul>'+children+'</ul>';
-        } else {
-          output.innerHTML = ''
-        }
-    }
-  </script>
+  <script src="/vendor/jquery/jquery.min.js"></script>
+  <script src="/vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
+  <script src="/rest/upload_reference_material.js"></script>
 
 </body>
 
