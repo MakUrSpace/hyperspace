@@ -8,25 +8,33 @@
   <meta name="author" content="">
 
   <title>MakUrSpace Bounty Submitted</title>
-
-  <!-- Bootstrap core CSS -->
   <link href="/vendor/bootstrap/css/bootstrap.min.css" rel="stylesheet">
-
-  <!-- Custom styles for this template -->
   <link href="/css/makurspace.css" rel="stylesheet">
 
   <link rel="shortcut icon" href="MakUrSpace_Logo.png" type="image/x-icon">
 
 </head>
 <body>
-
-  <!-- Navigation -->
-  <object data="/navbar.html" width="100%"></object>
-
-  <!-- Content -->
-  <div class="container">
+  <div class="container" id="navbar"></div>
+  <div class="container" id="bounty_submitted">
     <div class="row">
       <h3>Your bounty was submitted!!!</h3><br>
       <h4>Follow the instructions in the confirmation email (sent to {benefactor_email}) to publish your bounty to the MakUrSpace network</h4>
     </div>
   </div>
+
+  <script src="/vendor/jquery/jquery.min.js"></script>
+  <script src="/vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
+  <script>
+    $(document).ready(function(){
+      $.ajax({
+        url : `/navbar.html`,
+        type : "GET"
+      }).done(function(response){
+        const container = document.querySelector("#navbar")
+        container.innerHTML = response
+      })
+    })
+  </script>
+</body>
+</html>

@@ -43,6 +43,16 @@ def write(s3_path, content, bucket=None):
     boto3.client("s3").upload_fileobj(
         Fileobj=content_bytes,
         Bucket=bucket,
+        Key=s3_path)
+
+
+def write_in_public(s3_path, content, bucket=None):
+    bucket = bucket if bucket is not None else default_bucket
+    print(f"Writing s3://{bucket}/{s3_path}")
+    content_bytes = BytesIO(content)
+    boto3.client("s3").upload_fileobj(
+        Fileobj=content_bytes,
+        Bucket=bucket,
         Key=s3_path,
         ExtraArgs={'ACL': 'public-read'})
 
@@ -54,11 +64,12 @@ def write_json(s3_path, content):
 
 def presigned_write_url(s3_path, bucket=None):
     bucket = bucket if bucket is not None else default_bucket
-    return boto3.client('s3').generate_presigned_post(
+    psp = boto3.client('s3').generate_presigned_post(
         Bucket=bucket,
         Key=s3_path,
         Conditions=[{"acl": "public-read"}],
-        expiresIn=300)['url']
+        ExpiresIn=300)
+    return {"url": psp['url'], **psp['fields']}
 
 
 def delete(s3_path):

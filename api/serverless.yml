@@ -24,7 +24,7 @@ provider:
     - Effect: Allow
       Action:
         - s3:*
-      Resource: 'arn:aws:s3:::makurspace/*''
+      Resource: 'arn:aws:s3:::makurspace/*'
     - Effect: Allow
       Action:
         - ses:SendEmail
@@ -55,6 +55,12 @@ functions:
           method: get
       - http:
           path: /rest/bountyboard/{bounty_name}
+          method: get
+      - http:
+          path: /rest/bountyboard
+          method: get
+      - http:
+          path: /rest/rendered_bountyboard
           method: get
       - http:
           path: /rest/rendered_bounty/{bounty_name}

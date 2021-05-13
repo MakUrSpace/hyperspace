@@ -35,8 +35,6 @@ class Bounty:
     Contact: str
     BountyDescription: str
     ReferenceMaterial: list
-    TemplateProject: str
-    RequestedMaker: str = ""
     ConfirmationId: str = ""
     State: str = "submitted"
     states: ClassVar = ["submitted", "confirmed", "called", "claimed"]
@@ -126,7 +124,7 @@ def get_refmat_filename(part):
 
 def write_refmat_to_s3(bounty_name, refmat_name, refmat_content):
     s3_path = f"bountyboard/{bounty_name}/{refmat_name}"
-    s3.write(s3_path, refmat_content)
+    s3.write_in_public(s3_path, refmat_content)
 
 
 bounty_name_map = {
@@ -175,10 +173,8 @@ def submit_bounty_form(event):
         form_name = get_form_name(part)
         form_name = form_name if form_name not in bounty_name_map else bounty_name_map[form_name]
         assert form_name != 'State'
-        if form_name == 'ReferenceMaterial':
-            filename = get_refmat_filename(part)
-            new_bounty_defn['ReferenceMaterial'] = [filename]
-            refmat_material[filename] = part.content
+        if form_name == 'ReferenceMaterialNames':
+            new_bounty_defn['ReferenceMaterial'] = json.loads(part.content)
         else:
             new_bounty_defn[form_name] = part.content.decode()
 
@@ -250,10 +246,9 @@ def bounty_confirmed(event):
 def get_refmat_surl(event):
     bounty_id = event['pathParameters']['bounty_id']
     refmat_filename = event['pathParameters']['refmat_filename']
-    bounty = get_bounty(bounty_id)
-    s3_path = f"bountyboard/{bounty.BountyId}/{refmat_filename}"
-    url = s3.presigned_write_url(s3_path)
-    return 200, url
+    s3_path = f"bountyboard/{bounty_id}/{refmat_filename}"
+    # TODO: assert path doesn't exist
+    return 200, s3.presigned_write_url(s3_path)
 
 
 def render_refmat_upload_script(event):
@@ -276,34 +271,57 @@ function updateList(){
 function upload_reference_material(){
   updateList()
   var refmat = document.getElementById('ReferenceMaterial')
+  var refmat_by_name = {}
+  $(refmat.files).each(function(i, elem){
+    refmat_by_name[elem.name] = elem
+  })
 
-  for (var form_data, i = 0; i < refmat.files.length; i++){
-    form_data = new FormData()
-    form_data.append("", refmat.files[i], refmat.files[i].name)
+  var file_names = []
+  for (var file_index = 0; file_index < refmat.files.length; file_index++){
+    file_names.push(refmat.files[file_index].name)
     $.ajax({
-        url : `/rest/bounty_form/{bounty_id}/${refmat.files[i].name}`,
+        url : `/rest/bounty_form/{bounty_id}/${refmat.files[file_index].name}`,
         type : "GET",
-        data : form_data,
         mimeType : "multipart/form-data",
         cache : false,
         contentType : false,
         processData : false
       }).done(function(response){
+        response = JSON.parse(response)
+        var url = response['url']
+        var filename = response['key'].split("/").pop()
+
+        var file_data = new FormData()
+        for (var form_key in response){
+            if (form_key !== 'url'){
+                file_data.set(form_key, response[form_key])
+            }
+        }
+        file_data.set("ACL", "public-read")
+        file_data.set("file", refmat_by_name[filename], filename)
+
         $.ajax({
-        url : response['upload_url'],
-        type : "PUT",
-        data : form_data,
-        mimeType : "multipart/form-data",
-        cache : false,
-        contentType : false,
-        processData : false
-      }).done(function(response){
-        console.log(response)
-      })
-    })
-  }
+            url : url,
+            type : "POST",
+            data : file_data,
+            mimeType : "multipart/form-data",
+            cache : false,
+            contentType : false,
+            processData : false
+          }).done(function(response){
+            console.log(response)
+          })
+        })
+    }
+  document.getElementById('ReferenceMaterialNames').value = JSON.stringify(file_names)
 }
 """.replace("{bounty_id}", str(uuid4()))
+
+
+def rendered_bountyboard(event):
+    with open("bountyboard.html", "r") as f:
+        bountyboard_template = f.read()
+    return 200, bountyboard_template
 
 
 def build_page():
@@ -314,6 +332,7 @@ def build_page():
     page.add_endpoint(method="get", path="/rest/bounty_confirmation/{bounty_confirmation_id}", func=confirm_bounty, content_type="text/html")
     page.add_endpoint(method="post", path="/rest/bounty_confirmation/{bounty_confirmation_id}", func=bounty_confirmed, content_type="text/html")
     page.add_endpoint(method="get", path="/rest/bountyboard/{bounty_id}", func=handle_get_bounty)
+    page.add_endpoint(method="get", path="/rest/rendered_bountyboard", func=rendered_bountyboard, content_type="text/html")
     page.add_endpoint(method="get", path="/rest/rendered_bounty/{bounty_id}", func=get_rendered_bounty, content_type="text/html")
     page.add_endpoint(method="get", path="/rest/bountyboard", func=get_bounty_board)
     return page
