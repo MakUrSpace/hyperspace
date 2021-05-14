@@ -67,6 +67,9 @@ class Bounty:
                 return refmat
         return None
 
+    def image_path(self, image):
+        return f"/bountyboard/{self.BountyId}/{image}"
+
 
 def bounty_exists(bounty, all_states=False):
     check_states = [bounty.State] if not all_states else Bounty.states[::-1]
@@ -75,9 +78,12 @@ def bounty_exists(bounty, all_states=False):
             return state
 
 
-def get_bounty_board(event):
-    bounties = murd.read(group="confirmed", limit=200)
-    return 200, [Bounty.fromm(bounty).asdict() for bounty in bounties]
+def get_bountyboard():
+    return [Bounty.fromm(b) for b in murd.read(group="confirmed", limit=200)]
+
+
+def handle_get_bountyboard(event):
+    return 200, [bounty.asdict() for bounty in get_bountyboard()]
 
 
 def get_bounty(bounty_id):
@@ -105,7 +111,7 @@ def get_rendered_bounty(event):
 
     for pattern, replacement in {
             "{bounty_name}": bounty.BountyName,
-            "{primary_image}": f"/bountyboard/{bounty.BountyName}/{bounty.primary_image}",
+            "{primary_image}": bounty.image_path(bounty.primary_image),
             "{bounty_description}": bounty.BountyDescription}.items():
         template = template.replace(pattern, replacement)
 
@@ -153,7 +159,7 @@ def send_bounty_to_contact(new_bounty):
         new_bounty.asm(),
         {mddb.group_key: "confirmations",
          mddb.sort_key: confirmation_id,
-         "BountyName": new_bounty.BountyName}
+         "BountyId": new_bounty.BountyId}
     ])
 
     ses.send_email(subject=f"{new_bounty.BountyName} Bounty", sender="commissions@makurspace.com",
@@ -198,7 +204,7 @@ def submit_bounty_form(event):
 def confirm_bounty(event):
     confirmation_id = event['pathParameters']['bounty_confirmation_id']
     confirmationm = murd.read_first(group="confirmations", sort=confirmation_id)
-    get_bounty(confirmationm['BountyName'])
+    get_bounty(confirmationm['BountyId'])
     with open("confirm_bounty.html", "r") as fh:
         confirmation_template = fh.read()
     confirmation_template = confirmation_template.replace("{bounty_confirmation_id}", confirmation_id)
@@ -321,6 +327,17 @@ function upload_reference_material(){
 def rendered_bountyboard(event):
     with open("bountyboard.html", "r") as f:
         bountyboard_template = f.read()
+    with open("bountyboard_card.html", "r") as f:
+        bountyboard_card = f.read()
+    bountyboard = get_bountyboard()
+    bounty_cards = []
+    for bounty in bountyboard:
+        bounty_card = bountyboard_card.replace("{bounty_id}", bounty.BountyId)
+        bounty_card = bounty_card.replace("{primary_image}", bounty.image_path(bounty.primary_image))
+        bounty_card = bounty_card.replace("{bounty_name}", bounty.BountyName)
+        bounty_card = bounty_card.replace("{bounty_description}", bounty.BountyDescription)
+        bounty_cards.append(bounty_card)
+    bountyboard_template = bountyboard_template.replace("{bounties}", "\n".join(bounty_cards))
     return 200, bountyboard_template
 
 
@@ -334,7 +351,7 @@ def build_page():
     page.add_endpoint(method="get", path="/rest/bountyboard/{bounty_id}", func=handle_get_bounty)
     page.add_endpoint(method="get", path="/rest/rendered_bountyboard", func=rendered_bountyboard, content_type="text/html")
     page.add_endpoint(method="get", path="/rest/rendered_bounty/{bounty_id}", func=get_rendered_bounty, content_type="text/html")
-    page.add_endpoint(method="get", path="/rest/bountyboard", func=get_bounty_board)
+    page.add_endpoint(method="get", path="/rest/bountyboard", func=handle_get_bountyboard)
     return page
 
 

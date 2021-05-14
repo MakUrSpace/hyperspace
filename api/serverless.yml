@@ -54,7 +54,7 @@ functions:
           path: /rest/bountyboard
           method: get
       - http:
-          path: /rest/bountyboard/{bounty_name}
+          path: /rest/bountyboard/{bounty_id}
           method: get
       - http:
           path: /rest/bountyboard
@@ -63,7 +63,7 @@ functions:
           path: /rest/rendered_bountyboard
           method: get
       - http:
-          path: /rest/rendered_bounty/{bounty_name}
+          path: /rest/rendered_bounty/{bounty_id}
           method: get
       - http:
           path: /rest/bounty_confirmation/{bounty_confirmation_id}
