@@ -26,6 +26,12 @@ except Exception:
     purchase_murd = mddb.DDBMurd("purchases")
 
 
+def get_html_template(filename):
+    with open(f"html_templates/{filename}", "r") as f:
+        template = f.read()
+    return template
+
+
 @dataclass
 class Bounty:
     BountyId: str
@@ -106,11 +112,11 @@ def get_rendered_bounty(event):
     bounty_id = unquote_plus(event['pathParameters']['bounty_id'])
     bounty = get_bounty(bounty_id)
 
-    with open("bountycard.html", "r") as fh:
-        template = fh.read()
+    template = get_html_template("bountycard.html")
 
     for pattern, replacement in {
             "{bounty_name}": bounty.BountyName,
+            "{bounty_reward}": bounty.Bounty,
             "{primary_image}": bounty.image_path(bounty.primary_image),
             "{bounty_description}": bounty.BountyDescription}.items():
         template = template.replace(pattern, replacement)
@@ -145,8 +151,7 @@ bounty_name_map = {
 
 
 def send_bounty_to_contact(new_bounty):
-    with open("email_template.html") as fh:
-        email_template = fh.read()
+    email_template = get_html_template("email_template.html")
 
     for key, value in new_bounty.asdict().items():
         email_template = email_template.replace(f"{{{key}}}", f"{value}")
@@ -196,8 +201,8 @@ def submit_bounty_form(event):
 
     send_bounty_to_contact(new_bounty)
 
-    with open("bounty_submission_response_template.html", "r") as fh:
-        response_template = fh.read().replace("{benefactor_email}", new_bounty.Contact)
+    response_template = get_html_template("bounty_submission_response_template.html")
+    response_template = response_template.replace("{benefactor_email}", new_bounty.Contact)
     return 200, response_template
 
 
@@ -205,8 +210,7 @@ def confirm_bounty(event):
     confirmation_id = event['pathParameters']['bounty_confirmation_id']
     confirmationm = murd.read_first(group="confirmations", sort=confirmation_id)
     get_bounty(confirmationm['BountyId'])
-    with open("confirm_bounty.html", "r") as fh:
-        confirmation_template = fh.read()
+    confirmation_template = get_html_template("confirm_bounty.html")
     confirmation_template = confirmation_template.replace("{bounty_confirmation_id}", confirmation_id)
     return 200, confirmation_template
 
@@ -325,16 +329,15 @@ function upload_reference_material(){
 
 
 def rendered_bountyboard(event):
-    with open("bountyboard.html", "r") as f:
-        bountyboard_template = f.read()
-    with open("bountyboard_card.html", "r") as f:
-        bountyboard_card = f.read()
+    bountyboard_template = get_html_template("bountyboard.html")
+    bountyboard_card = get_html_template("bountyboard_card.html")
     bountyboard = get_bountyboard()
     bounty_cards = []
     for bounty in bountyboard:
         bounty_card = bountyboard_card.replace("{bounty_id}", bounty.BountyId)
         bounty_card = bounty_card.replace("{primary_image}", bounty.image_path(bounty.primary_image))
         bounty_card = bounty_card.replace("{bounty_name}", bounty.BountyName)
+        bounty_card = bounty_card.replace("{bounty_reward}", bounty.Bounty)
         bounty_card = bounty_card.replace("{bounty_description}", bounty.BountyDescription)
         bounty_cards.append(bounty_card)
     bountyboard_template = bountyboard_template.replace("{bounties}", "\n".join(bounty_cards))
