@@ -20,6 +20,7 @@ body {
 }
 
 .container {
+  background-color: #5e5e5e;
   color: white;
 }
 
@@ -27,6 +28,18 @@ body {
   background-color: #333333;
   color: white;
 }
+
+
+.breadcrumb {
+  display: flex;
+  flex-wrap: wrap;
+  padding: 0.75rem 1rem;
+  margin-bottom: 1rem;
+  list-style: none;
+  background-color: #7d7d7d;
+  border-radius: 0.25rem;
+}
+
 
 .portfolio-item {
   margin-bottom: 30px;

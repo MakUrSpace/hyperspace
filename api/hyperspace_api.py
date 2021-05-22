@@ -111,12 +111,15 @@ def handle_get_bounty(event):
 def get_rendered_bounty(event):
     bounty_id = unquote_plus(event['pathParameters']['bounty_id'])
     bounty = get_bounty(bounty_id)
+    bounty_reward = bounty.Bounty
+    if bounty_reward.startswith("$"):
+        bounty_reward = float(bounty_reward[1:].strip())
 
     template = get_html_template("bountycard.html")
 
     for pattern, replacement in {
             "{bounty_name}": bounty.BountyName,
-            "{bounty_reward}": bounty.Bounty,
+            "{bounty_reward}": "${:.2}".format(bounty_reward),
             "{primary_image}": bounty.image_path(bounty.primary_image),
             "{bounty_description}": bounty.BountyDescription}.items():
         template = template.replace(pattern, replacement)

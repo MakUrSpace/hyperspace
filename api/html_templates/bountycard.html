@@ -9,6 +9,7 @@
   <title>{bounty_name} Bounty</title>
   <link href="/vendor/bootstrap/css/bootstrap.min.css" rel="stylesheet">
   <link href="/css/modern-business.css" rel="stylesheet">
+  <link href="/css/makurspace.css" rel="stylesheet">
 </head>
 
 <body>
@@ -21,7 +22,7 @@
       </li>
     </ol>
 
-    <div class="row">
+    <div class="row" style="margin-bottom: 30px">
       <div class="col-md-8">
         <img class="img-fluid" src="{primary_image}" alt="{bounty_name} reference image">
       </div>
@@ -31,6 +32,10 @@
         <h3 class="my-3">Description</h3>
         <p>{bounty_description}</p>
         <!-- Add better formatting. Expect Markdown? -->
+        <div class="container">
+          <button class="col btn btn-primary" id="suggest_edit_button">Suggest Edit</button>
+          <button class="col btn btn-primary" id="make_this_button">I can make this!</button>
+        </div>
       </div>
 
     </div>
