@@ -1,3 +1,4 @@
+import re
 from time import sleep
 from uuid import uuid4
 import json
@@ -26,10 +27,19 @@ except Exception:
     purchase_murd = mddb.DDBMurd("purchases")
 
 
+def get_javascript_template(filename):
+    with open(f"javascript_templates/{filename}", "r") as f:
+        template = f.read()
+    return template
+
+
 def get_html_template(filename):
     with open(f"html_templates/{filename}", "r") as f:
         template = f.read()
     return template
+
+
+email_regex_pattern = re.compile(r"""(?:[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*|"(?:[\x01-\x08\x0b\x0c\x0e-\x1f\x21\x23-\x5b\x5d-\x7f]|\\[\x01-\x09\x0b\x0c\x0e-\x7f])*")@(?:(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?|\[(?:(?:(2(5[0-5]|[0-4][0-9])|1[0-9][0-9]|[1-9]?[0-9]))\.){3}(?:(2(5[0-5]|[0-4][0-9])|1[0-9][0-9]|[1-9]?[0-9])|[a-z0-9-]*[a-z0-9]:(?:[\x01-\x08\x0b\x0c\x0e-\x1f\x21-\x5a\x53-\x7f]|\\[\x01-\x09\x0b\x0c\x0e-\x7f])+)\])""")
 
 
 @dataclass
@@ -42,8 +52,34 @@ class Bounty:
     BountyDescription: str
     ReferenceMaterial: list
     ConfirmationId: str = ""
+    MakerName: str = ""
+    MakerEmail: str = ""
     State: str = "submitted"
     states: ClassVar = ["submitted", "confirmed", "called", "claimed"]
+
+    @property
+    def sanitized_reward(self):
+        sanitized_reward = self.Bounty
+        if sanitized_reward.startswith("$"):
+            sanitized_reward = sanitized_reward[1:].strip()
+        try:
+            return float(sanitized_reward)
+        except ValueError:
+            return 9999.99
+
+    @property
+    def reward(self):
+        return f"${self.sanitized_reward:.2f}"
+
+    @property
+    def sanitized_contact(self):
+        regexed = email_regex_pattern.match(self.Contact)
+        return regexed.string
+
+    @property
+    def sanitized_maker_email(self):
+        regexed = email_regex_pattern.match(self.MakerEmail)
+        return regexed.string
 
     @classmethod
     def fromm(cls, m):
@@ -111,15 +147,13 @@ def handle_get_bounty(event):
 def get_rendered_bounty(event):
     bounty_id = unquote_plus(event['pathParameters']['bounty_id'])
     bounty = get_bounty(bounty_id)
-    bounty_reward = bounty.Bounty
-    if bounty_reward.startswith("$"):
-        bounty_reward = float(bounty_reward[1:].strip())
 
     template = get_html_template("bountycard.html")
 
     for pattern, replacement in {
             "{bounty_name}": bounty.BountyName,
-            "{bounty_reward}": "${:.2}".format(bounty_reward),
+            "{bounty_id}": bounty.BountyId,
+            "{bounty_reward}": bounty.reward,
             "{primary_image}": bounty.image_path(bounty.primary_image),
             "{bounty_description}": bounty.BountyDescription}.items():
         template = template.replace(pattern, replacement)
@@ -154,24 +188,26 @@ bounty_name_map = {
 
 
 def send_bounty_to_contact(new_bounty):
-    email_template = get_html_template("email_template.html")
+    email_template = get_html_template("bounty_creation_email_template.html")
 
     for key, value in new_bounty.asdict().items():
         email_template = email_template.replace(f"{{{key}}}", f"{value}")
 
     confirmation_id = str(uuid4())
     email_template = email_template.replace("{bounty_confirmation_id}", confirmation_id)
+    email_template = email_template.replace("{BountyReward}", new_bounty.reward)
 
     new_bounty.ConfirmationId = confirmation_id
     murd.update([
         new_bounty.asm(),
-        {mddb.group_key: "confirmations",
+        {mddb.group_key: "bounty_creation_confirmations",
          mddb.sort_key: confirmation_id,
-         "BountyId": new_bounty.BountyId}
+         "BountyId": new_bounty.BountyId,
+         "CreationTime": datetime.utcnow().isoformat()}
     ])
 
     ses.send_email(subject=f"{new_bounty.BountyName} Bounty", sender="commissions@makurspace.com",
-                   contact="hello@makurspace.com", content=email_template)
+                   contact=new_bounty.sanitized_contact, content=email_template)
 
 
 def submit_bounty_form(event):
@@ -209,9 +245,9 @@ def submit_bounty_form(event):
     return 200, response_template
 
 
-def confirm_bounty(event):
+def confirm_bounty_creation(event):
     confirmation_id = event['pathParameters']['bounty_confirmation_id']
-    confirmationm = murd.read_first(group="confirmations", sort=confirmation_id)
+    confirmationm = murd.read_first(group="bounty_creation_confirmations", sort=confirmation_id)
     get_bounty(confirmationm['BountyId'])
     confirmation_template = get_html_template("confirm_bounty.html")
     confirmation_template = confirmation_template.replace("{bounty_confirmation_id}", confirmation_id)
@@ -248,10 +284,11 @@ class PurchaseConfirmation:
 
 def bounty_confirmed(event):
     confirmation_id = event['pathParameters']['bounty_confirmation_id']
-    confirmationm = murd.read_first(group="confirmations", sort=confirmation_id)
-    bounty = get_bounty(confirmationm['BountyName'])
+    confirmationm = murd.read_first(group="bounty_creation_confirmations", sort=confirmation_id)
+    bounty = get_bounty(confirmationm['BountyId'])
     purchase_confirmation = PurchaseConfirmation(**json.loads(event['body']))
     purchase_confirmation.store()
+    murd.delete([bounty.asm(), confirmationm])
     bounty.State = "confirmed"
     bounty.store()
 
@@ -265,86 +302,129 @@ def get_refmat_surl(event):
 
 
 def render_refmat_upload_script(event):
-    return 200, """
-var refmat = document.getElementById('ReferenceMaterial')
-
-function updateList(){
-    var output = document.getElementById('reference_material_file_list')
-    var children = "";
-    for (var i = 0; i < refmat.files.length; ++i) {
-        children += '<li>' + refmat.files.item(i).name + '</li>'
-    }
-    if (refmat.files.length > 1) {
-      output.innerHTML = '<ul>'+children+'</ul>';
-    } else {
-      output.innerHTML = ''
-    }
-}
-
-function upload_reference_material(){
-  updateList()
-  var refmat = document.getElementById('ReferenceMaterial')
-  var refmat_by_name = {}
-  $(refmat.files).each(function(i, elem){
-    refmat_by_name[elem.name] = elem
-  })
-
-  var file_names = []
-  for (var file_index = 0; file_index < refmat.files.length; file_index++){
-    file_names.push(refmat.files[file_index].name)
-    $.ajax({
-        url : `/rest/bounty_form/{bounty_id}/${refmat.files[file_index].name}`,
-        type : "GET",
-        mimeType : "multipart/form-data",
-        cache : false,
-        contentType : false,
-        processData : false
-      }).done(function(response){
-        response = JSON.parse(response)
-        var url = response['url']
-        var filename = response['key'].split("/").pop()
-
-        var file_data = new FormData()
-        for (var form_key in response){
-            if (form_key !== 'url'){
-                file_data.set(form_key, response[form_key])
-            }
-        }
-        file_data.set("ACL", "public-read")
-        file_data.set("file", refmat_by_name[filename], filename)
-
-        $.ajax({
-            url : url,
-            type : "POST",
-            data : file_data,
-            mimeType : "multipart/form-data",
-            cache : false,
-            contentType : false,
-            processData : false
-          }).done(function(response){
-            console.log(response)
-          })
-        })
-    }
-  document.getElementById('ReferenceMaterialNames').value = JSON.stringify(file_names)
-}
-""".replace("{bounty_id}", str(uuid4()))
+    script_template = get_javascript_template("upload_reference_material.js")
+    return 200, script_template.replace("{bounty_id}", str(uuid4()))
 
 
 def rendered_bountyboard(event):
     bountyboard_template = get_html_template("bountyboard.html")
-    bountyboard_card = get_html_template("bountyboard_card.html")
+    bountyboard_card_template = get_html_template("bountyboard_card.html")
     bountyboard = get_bountyboard()
-    bounty_cards = []
+    bountyboard_cards = []
     for bounty in bountyboard:
-        bounty_card = bountyboard_card.replace("{bounty_id}", bounty.BountyId)
-        bounty_card = bounty_card.replace("{primary_image}", bounty.image_path(bounty.primary_image))
-        bounty_card = bounty_card.replace("{bounty_name}", bounty.BountyName)
-        bounty_card = bounty_card.replace("{bounty_reward}", bounty.Bounty)
-        bounty_card = bounty_card.replace("{bounty_description}", bounty.BountyDescription)
-        bounty_cards.append(bounty_card)
-    bountyboard_template = bountyboard_template.replace("{bounties}", "\n".join(bounty_cards))
+        bountyboard_card = bountyboard_card_template.replace("{bounty_id}", bounty.BountyId)
+        bountyboard_card = bountyboard_card.replace("{primary_image}", bounty.image_path(bounty.primary_image))
+        bountyboard_card = bountyboard_card.replace("{bounty_name}", bounty.BountyName)
+        bountyboard_card = bountyboard_card.replace("{bounty_reward}", bounty.reward)
+        bountyboard_card = bountyboard_card.replace("{bounty_description}", bounty.BountyDescription)
+        bountyboard_cards.append(bountyboard_card)
+    bountyboard_template = bountyboard_template.replace("{bounties}", "\n".join(bountyboard_cards))
     return 200, bountyboard_template
+
+
+def get_edit_bounty_form(event):
+    bounty_id = unquote_plus(event['pathParameters']['bounty_id'])
+    bounty = get_bounty(bounty_id)
+    form_template = get_html_template("edit_bounty_form.html")
+    script_template = get_javascript_template("upload_reference_material.js")
+    script_template.replace("{bounty_id}", bounty_id)
+
+    for pattern, replacement in {
+            "{bounty_name}": bounty.BountyName,
+            "{bounty_reward}": bounty.reward,
+            "{bounty_description}": bounty.BountyDescription,
+            "{upload_reference_material_script}": script_template}.items():
+        form_template = form_template.replace(pattern, replacement)
+
+    return 200, form_template
+
+
+def receive_bounty_edit(event):
+    bounty_id = unquote_plus(event['pathParameters']['bounty_id'])
+    bounty = get_bounty(bounty_id)
+    bounty_edit = {}
+
+    content_type = event['headers']['content-type']
+    form_data = b64decode(event['body'])
+
+    multipart_decoder = MultipartDecoder(content=form_data, content_type=content_type)
+    for part in multipart_decoder.parts:
+        form_name = get_form_name(part)
+        form_name = form_name if form_name not in bounty_name_map else bounty_name_map[form_name]
+        bounty_edit[form_name] = part.content.decode()
+
+    bounty.BountyName = bounty_edit['BountyName']
+    # murd.update([bounty.asm()])
+    return 200, ""
+
+
+def get_call_bounty_form(event):
+    bounty_id = unquote_plus(event['pathParameters']['bounty_id'])
+    bounty = get_bounty(bounty_id)
+    form_template = get_html_template("call_bounty_form.html")
+
+    for pattern, replacement in {
+            "{bounty_name}": bounty.BountyName,
+            "{bounty_id}": bounty.BountyId}.items():
+        form_template = form_template.replace(pattern, replacement)
+
+    return 200, form_template
+
+
+def receive_call_bounty(event):
+    bounty_id = unquote_plus(event['pathParameters']['bounty_id'])
+    bounty = get_bounty(bounty_id)
+    maker_contact = {}
+
+    content_type = event['headers']['content-type']
+    form_data = b64decode(event['body'])
+
+    multipart_decoder = MultipartDecoder(content=form_data, content_type=content_type)
+    for part in multipart_decoder.parts:
+        form_name = get_form_name(part)
+        form_name = form_name if form_name not in bounty_name_map else bounty_name_map[form_name]
+        maker_contact[form_name] = part.content.decode()
+
+    bounty.MakerEmail = maker_contact['maker_email']
+    confirmation_id = str(uuid4())
+    email_template = get_html_template("call_bounty_email.html")
+
+    for pattern, replacement in {
+            "{bounty_name}": bounty.BountyName,
+            "{call_confirmation_id}": confirmation_id,
+            "{bounty_reward}": bounty.reward,
+            "{bounty_description}": bounty.BountyDescription,
+            "{maker_email}": bounty.sanitized_maker_email,
+            "{maker_name}": maker_contact['maker_name']}.items():
+        email_template = email_template.replace(pattern, replacement)
+
+    murd.update([
+        {mddb.group_key: "bounty_call_confirmations",
+         mddb.sort_key: confirmation_id,
+         "BountyId": bounty.BountyId,
+         "MakerEmail": bounty.sanitized_maker_email,
+         "MakerName": maker_contact["maker_name"],
+         "CreationTime": datetime.utcnow().isoformat()}
+    ])
+    ses.send_email(subject=f'So, you wanna make "{bounty.BountyName}"?', sender="commissions@makurspace.com",
+                   contact=bounty.sanitized_maker_email, content=email_template)
+    call_confirmation_email_sent = get_html_template("call_confirmation_email_sent.html")
+    return 200, call_confirmation_email_sent
+
+
+def confirm_call_bounty(event):
+    confirmation_id = event['pathParameters']['call_confirmation_id']
+    confirmationm = murd.read_first(group="bounty_call_confirmations", sort=confirmation_id)
+    bounty = get_bounty(confirmationm['BountyId'])
+    bounty.MakerName = confirmationm['MakerName']
+    bounty.MakerEmail = confirmationm['MakerEmail']
+    murd.delete([bounty.asm()])
+    bounty.State = "called"
+    murd.update([bounty.asm()])
+
+    called_bounty_confirmation = get_html_template("called_confirmation.html").replace("{bounty_name}", bounty.BountyName)
+
+    return 200, called_bounty_confirmation
 
 
 def build_page():
@@ -352,12 +432,17 @@ def build_page():
     page.add_endpoint(method="get", path="/rest/upload_reference_material.js", func=render_refmat_upload_script, content_type="text/javascript")
     page.add_endpoint(method="get", path="/rest/bounty_form/{bounty_id}/{refmat_filename}", func=get_refmat_surl)
     page.add_endpoint(method="post", path="/rest/bounty_form", func=submit_bounty_form, content_type="text/html")
-    page.add_endpoint(method="get", path="/rest/bounty_confirmation/{bounty_confirmation_id}", func=confirm_bounty, content_type="text/html")
+    page.add_endpoint(method="get", path="/rest/bounty_confirmation/{bounty_confirmation_id}", func=confirm_bounty_creation, content_type="text/html")
     page.add_endpoint(method="post", path="/rest/bounty_confirmation/{bounty_confirmation_id}", func=bounty_confirmed, content_type="text/html")
     page.add_endpoint(method="get", path="/rest/bountyboard/{bounty_id}", func=handle_get_bounty)
     page.add_endpoint(method="get", path="/rest/rendered_bountyboard", func=rendered_bountyboard, content_type="text/html")
     page.add_endpoint(method="get", path="/rest/rendered_bounty/{bounty_id}", func=get_rendered_bounty, content_type="text/html")
     page.add_endpoint(method="get", path="/rest/bountyboard", func=handle_get_bountyboard)
+    page.add_endpoint(method="get", path="/rest/edit_bounty/{bounty_id}", func=get_edit_bounty_form, content_type="text/html")
+    page.add_endpoint(method="post", path="/rest/edit_bounty/{bounty_id}", func=receive_bounty_edit, content_type="text/html")
+    page.add_endpoint(method="get", path="/rest/call_bounty/{bounty_id}", func=get_call_bounty_form, content_type="text/html")
+    page.add_endpoint(method="post", path="/rest/call_bounty/{bounty_id}", func=receive_call_bounty, content_type="text/html")
+    page.add_endpoint(method="get", path="/rest/call_bounty_confirm/{call_confirmation_id}", func=confirm_call_bounty, content_type="text/html")
     return page
 
 

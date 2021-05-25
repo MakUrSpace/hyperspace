@@ -33,8 +33,8 @@
         <p>{bounty_description}</p>
         <!-- Add better formatting. Expect Markdown? -->
         <div class="container">
-          <button class="col btn btn-primary" id="suggest_edit_button">Suggest Edit</button>
-          <button class="col btn btn-primary" id="make_this_button">I can make this!</button>
+          <button class="col btn btn-primary" id="suggest_edit_button" style="margin-bottom: 7px" onclick="location.href='/rest/edit_bounty/{bounty_id}';">Suggest Edit</button>
+          <button class="col btn btn-primary" id="make_this_button" onclick="location.href='/rest/call_bounty/{bounty_id}';">I can make this!</button>
         </div>
       </div>
 

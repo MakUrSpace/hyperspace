@@ -42,12 +42,6 @@ functions:
           path: /rest/upload_reference_material.js
           method: get
       - http:
-          path: /rest/bounty_form/{bounty_id}/{refmat_filename}
-          method: get
-      - http:
-          path: /rest/bounty_form
-          method: post
-      - http:
           path: /rest/bountyboard
           method: post
       - http:
@@ -66,11 +60,32 @@ functions:
           path: /rest/rendered_bounty/{bounty_id}
           method: get
       - http:
+          path: /rest/bounty_form/{bounty_id}/{refmat_filename}
+          method: get
+      - http:
+          path: /rest/bounty_form
+          method: post
+      - http:
           path: /rest/bounty_confirmation/{bounty_confirmation_id}
           method: get
       - http:
           path: /rest/bounty_confirmation/{bounty_confirmation_id}
           method: post
+      - http:
+          path: /rest/edit_bounty/{bounty_id}
+          method: get
+      - http:
+          path: /rest/edit_bounty/{bounty_id}
+          method: post
+      - http:
+          path: /rest/call_bounty/{bounty_id}
+          method: get
+      - http:
+          path: /rest/call_bounty/{bounty_id}
+          method: post
+      - http:
+          path: /rest/call_bounty_confirm/{call_confirmation_id}
+          method: get
 
 custom:
   pythonRequirements:
