@@ -54,7 +54,19 @@ functions:
           path: /rest/bountyboard
           method: get
       - http:
+          path: /rest/bounties_in_progress
+          method: get
+      - http:
+          path: /rest/bounty_portfolio
+          method: get
+      - http:
           path: /rest/rendered_bountyboard
+          method: get
+      - http:
+          path: /rest/rendered_bounties_in_progress
+          method: get
+      - http:
+          path: /rest/rendered_bounty_portfolio
           method: get
       - http:
           path: /rest/rendered_bounty/{bounty_id}

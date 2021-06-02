@@ -16,15 +16,17 @@ import ses
 
 
 mddb.ddb_murd_prefix = "musbb_murd_"
-try:
-    murd = mddb.DDBMurd("BountyBoard")
-    purchase_murd = mddb.DDBMurd("purchases")
-except Exception:
+murd = mddb.DDBMurd("BountyBoard")
+purchase_murd = mddb.DDBMurd("purchases")
+
+
+def provision_murd_tables():
     mddb.DDBMurd.create_murd_table("BountyBoard")
     mddb.DDBMurd.create_murd_table("purchases")
     sleep(10)
     murd = mddb.DDBMurd("BountyBoard")
     purchase_murd = mddb.DDBMurd("purchases")
+    return murd, purchase_murd
 
 
 def get_javascript_template(filename):
@@ -100,6 +102,13 @@ class Bounty:
     def store(self):
         murd.update([self.asm()])
 
+    def change_state(self, target_state):
+        assert target_state in Bounty.states
+        orig = self.asm()
+        self.State = target_state
+        self.store()
+        murd.delete([orig])
+
     @property
     def primary_image(self):
         formats = ["jpg", "jpeg", "png"]
@@ -120,12 +129,20 @@ def bounty_exists(bounty, all_states=False):
             return state
 
 
-def get_bountyboard():
-    return [Bounty.fromm(b) for b in murd.read(group="confirmed", limit=200)]
+def get_bounties(group="confirmed", limit=200):
+    return [Bounty.fromm(b) for b in murd.read(group=group, limit=limit)]
 
 
 def handle_get_bountyboard(event):
-    return 200, [bounty.asdict() for bounty in get_bountyboard()]
+    return 200, [bounty.asdict() for bounty in get_bounties()]
+
+
+def handle_get_bounties_in_progress(event):
+    return 200, [bounty.asdict() for bounty in get_bounties(group="called")]
+
+
+def handle_get_bounty_portfolio(event):
+    return 200, [bounty.asdict() for bounty in get_bounties(group="claimed")]
 
 
 def get_bounty(bounty_id):
@@ -289,8 +306,7 @@ def bounty_confirmed(event):
     purchase_confirmation = PurchaseConfirmation(**json.loads(event['body']))
     purchase_confirmation.store()
     murd.delete([bounty.asm(), confirmationm])
-    bounty.State = "confirmed"
-    bounty.store()
+    bounty.change_state("confirmed")
 
 
 def get_refmat_surl(event):
@@ -306,10 +322,10 @@ def render_refmat_upload_script(event):
     return 200, script_template.replace("{bounty_id}", str(uuid4()))
 
 
-def rendered_bountyboard(event):
+def render_bountyboard(group="confirmed", limit=200):
     bountyboard_template = get_html_template("bountyboard.html")
     bountyboard_card_template = get_html_template("bountyboard_card.html")
-    bountyboard = get_bountyboard()
+    bountyboard = get_bounties(group=group, limit=limit)
     bountyboard_cards = []
     for bounty in bountyboard:
         bountyboard_card = bountyboard_card_template.replace("{bounty_id}", bounty.BountyId)
@@ -319,7 +335,22 @@ def rendered_bountyboard(event):
         bountyboard_card = bountyboard_card.replace("{bounty_description}", bounty.BountyDescription)
         bountyboard_cards.append(bountyboard_card)
     bountyboard_template = bountyboard_template.replace("{bounties}", "\n".join(bountyboard_cards))
-    return 200, bountyboard_template
+    return bountyboard_template
+
+
+def rendered_bountyboard(event):
+    bountyboard = render_bountyboard(group="confirmed")
+    return 200, bountyboard
+
+
+def rendered_bounties_in_progress(event):
+    bountyboard = render_bountyboard(group="called")
+    return 200, bountyboard
+
+
+def rendered_bounty_portfolio(event):
+    bountyboard = render_bountyboard(group="claimed")
+    return 200, bountyboard
 
 
 def get_edit_bounty_form(event):
@@ -419,8 +450,7 @@ def confirm_call_bounty(event):
     bounty.MakerName = confirmationm['MakerName']
     bounty.MakerEmail = confirmationm['MakerEmail']
     murd.delete([bounty.asm()])
-    bounty.State = "called"
-    murd.update([bounty.asm()])
+    bounty.change_state("called")
 
     called_bounty_confirmation = get_html_template("called_confirmation.html").replace("{bounty_name}", bounty.BountyName)
 
@@ -436,8 +466,12 @@ def build_page():
     page.add_endpoint(method="post", path="/rest/bounty_confirmation/{bounty_confirmation_id}", func=bounty_confirmed, content_type="text/html")
     page.add_endpoint(method="get", path="/rest/bountyboard/{bounty_id}", func=handle_get_bounty)
     page.add_endpoint(method="get", path="/rest/rendered_bountyboard", func=rendered_bountyboard, content_type="text/html")
+    page.add_endpoint(method="get", path="/rest/rendered_bounties_in_progress", func=rendered_bounties_in_progress, content_type="text/html")
+    page.add_endpoint(method="get", path="/rest/rendered_bounty_portfolio", func=rendered_bounty_portfolio, content_type="text/html")
     page.add_endpoint(method="get", path="/rest/rendered_bounty/{bounty_id}", func=get_rendered_bounty, content_type="text/html")
     page.add_endpoint(method="get", path="/rest/bountyboard", func=handle_get_bountyboard)
+    page.add_endpoint(method="get", path="/rest/bounties_in_progress", func=handle_get_bountyboard)
+    page.add_endpoint(method="get", path="/rest/bounty_portfolio", func=handle_get_bountyboard)
     page.add_endpoint(method="get", path="/rest/edit_bounty/{bounty_id}", func=get_edit_bounty_form, content_type="text/html")
     page.add_endpoint(method="post", path="/rest/edit_bounty/{bounty_id}", func=receive_bounty_edit, content_type="text/html")
     page.add_endpoint(method="get", path="/rest/call_bounty/{bounty_id}", func=get_call_bounty_form, content_type="text/html")
