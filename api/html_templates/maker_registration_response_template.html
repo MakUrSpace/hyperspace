@@ -27,6 +27,18 @@
       <p class="m-0 text-center text-white">Copyright &copy; MakUrSpace, LLC 2021</p>
     </div>
   </footer>
+  <script src="/vendor/jquery/jquery.min.js"></script>
+  <script src="/vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
+  <script>
+    $(document).ready(function(){
+      $.ajax({
+        url : `/navbar.html`,
+        type : "GET"
+      }).done(function(response){
+        const container = document.querySelector("#navbar")
+        container.innerHTML = response
+      })
+    })
   </script>
 </body>
 </html>

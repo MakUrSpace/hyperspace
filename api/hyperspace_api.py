@@ -481,7 +481,7 @@ class Maker:
 
 
 def send_confirmation_to_maker(maker):
-    email_template = get_html_template("maker_registration_response_email_template.html ")
+    email_template = get_html_template("maker_registration_response_email_template.html")
 
     for key, value in asdict(maker).items():
         email_template = email_template.replace(f"{{{key}}}", f"{value}")
@@ -511,7 +511,10 @@ def submit_maker_registration(event):
     for part in multipart_decoder.parts:
         form_name = get_form_name(part)
         form_name = form_name if form_name not in bounty_name_map else bounty_name_map[form_name]
-        new_maker_defn[form_name] = part.content.decode()
+        content = part.content.decode()
+        if form_name == 'ConfirmedContract':
+            content = content == 'on'
+        new_maker_defn[form_name] = content
 
     maker = Maker(**new_maker_defn, MakerId=str(uuid4()))
     send_confirmation_to_maker(maker)
@@ -545,7 +548,7 @@ def build_page():
 
     # Maker Registration
     page.add_endpoint(method="post", path="/rest/maker_registration", func=submit_maker_registration, content_type="text/html")
-    page.add_endpoint(method="post", path="/rest/maker_registration/{maker_id}", func=confirm_maker_registration, content_type="text/html")
+    page.add_endpoint(method="get", path="/rest/maker_registration/{maker_id}", func=confirm_maker_registration, content_type="text/html")
 
     # Bounty Submission
     page.add_endpoint(method="get", path="/rest/upload_reference_material.js", func=render_refmat_upload_script, content_type="text/javascript")
@@ -578,7 +581,7 @@ def lambda_handler(event, context):
     page = build_page()
     results = page.handle_request(event)
     build_time = (datetime.utcnow() - start).total_seconds()
-    print(f"SC: {results['statusCode']} || BT: {build_time}")
+    print(f"SC: {results['statusCode']} ||| BT: {build_time}")
     return results
 
 

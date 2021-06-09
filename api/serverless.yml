@@ -46,7 +46,7 @@ functions:
           method: post
       - http:
           path: /rest/maker_registration/{maker_id}
-          method: post
+          method: get
       - http:
           path: /rest/bountyboard
           method: post
