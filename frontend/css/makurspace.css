@@ -21,7 +21,7 @@ body {
 
 .container {
   background-color: #5e5e5e;
-  color: white;
+  color: gray;
 }
 
 .card {
@@ -63,4 +63,12 @@ footer {
 }
 .pt-5, .py-5 {
   padding-top: 1rem !important;
+}
+
+.form-control {
+  background-color: #333333;
+}
+
+.list-group-item {
+  background-color: #333333;
 }

@@ -26,25 +26,32 @@
     </ol>
     <div class="row">
       <div class="col-lg-8 mb-4">
-        <form name="sentMessage" id="maker_registration_form" novalidate enctype="multipart/form-data" method="post" action="/rest/maker_registration_form" enctype="multipart/form-data">
+        <form name="sentMessage" id="maker_registration_form" novalidate enctype="multipart/form-data" method="post" action="/rest/maker_registration" enctype="multipart/form-data">
           <div class="control-group form-group input-group">
             <div class="controls">
               <label>Maker Name</label>
-              <input type="text" class="form-control" id="maker_name" name="maker_name" required data-validation-required-message="Please enter a name with which to address you">
+              <input type="text" class="form-control" id="MakerName" name="MakerName" required data-validation-required-message="Please enter a name with which to address you">
               <p class="help-block"></p>
             </div>
           </div>
           <div class="control-group form-group">
             <div class="controls">
               <label>Maker Email</label>
-              <input type="text" class="form-control" id="BountyName" name="BountyName" required data-validation-required-message="Please enter an email address at which to contact you">
+              <input type="text" class="form-control" id="MakerEmail" name="MakerEmail" required data-validation-required-message="Please enter an email address at which to contact you">
             </div>
           </div>
           <div class="control-group form-group">
             <div class="controls">
-              <label>Do you agree to the MakUrSpace Maker Contract terms and conditions?</label>
-              <input type="checkbox" class="form-control" id="contract_consent" name="contract_consent" required data-validation-required-message="To register as a MakUrSpace Maker, you must agree to the contract">
+              <label>Do you agree to the MakUrSpace Maker Contract terms and conditions, as defined below?</label>
+	            <ul class="list-group">
+                   <li class="list-group-item">I am a sapient, human individual</li>
+                   <li class="list-group-item">I am a self-employed maker utilizing MakUrSpace to find and facilitate work</li>
+		               <li class="list-group-item">None of MakUrSpace, LLC, a bounty's benefactor, or a bounty's submitter are liable for any injuries I may incur in pursuit of a bounty</li>
+	            </ul>
             </div>
+          </div>
+          <div class="control-group form-group">
+            <input type="checkbox" class="form-control" id="ConfirmedContract" name="ConfirmedContract" required data-validation-required-message="To register as a MakUrSpace Maker, you must agree to the contract">
           </div>
           <div id="success"></div>
           <!-- For success/fail messages -->

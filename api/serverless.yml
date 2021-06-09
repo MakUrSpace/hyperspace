@@ -42,6 +42,12 @@ functions:
           path: /rest/upload_reference_material.js
           method: get
       - http:
+          path: /rest/maker_registration
+          method: post
+      - http:
+          path: /rest/maker_registration/{maker_id}
+          method: post
+      - http:
           path: /rest/bountyboard
           method: post
       - http:

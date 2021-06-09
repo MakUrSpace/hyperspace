@@ -457,26 +457,118 @@ def confirm_call_bounty(event):
     return 200, called_bounty_confirmation
 
 
+@dataclass
+class Maker:
+    MakerEmail: str
+    MakerName: str
+    MakerId: str
+    ConfirmedContract: bool
+
+    @classmethod
+    def fromm(cls, m):
+        return cls(MakerEmail=m['MakerEmail'], MakerName=m['MakerName'], MakerId=m['MakerId'], ConfirmedContract=m['ConfirmedContract'])
+
+    @property
+    def sanitized_maker_email(self):
+        regexed = email_regex_pattern.match(self.MakerEmail)
+        return regexed.string
+
+    def asm(self):
+        return {mddb.group_key: "makers", mddb.sort_key: self.MakerEmail, **asdict(self)}
+
+    def store(self):
+        murd.update([self.asm()])
+
+
+def send_confirmation_to_maker(maker):
+    email_template = get_html_template("maker_registration_response_email_template.html ")
+
+    for key, value in asdict(maker).items():
+        email_template = email_template.replace(f"{{{key}}}", f"{value}")
+
+    email_template = email_template.replace("{maker_name}", maker.MakerName)
+    email_template = email_template.replace("{maker_id}", maker.MakerId)
+
+    murd.update([
+        maker.asm(),
+        {mddb.group_key: "maker_registrations",
+         mddb.sort_key: maker.MakerId,
+         **asdict(maker),
+         "CreationTime": datetime.utcnow().isoformat()}
+    ])
+
+    ses.send_email(subject=f"MakUrSpace Maker Registration", sender="commissions@makurspace.com",
+                   contact=maker.sanitized_maker_email, content=email_template)
+
+
+def submit_maker_registration(event):
+    new_maker_defn = {}
+
+    content_type = event['headers']['content-type']
+    form_data = b64decode(event['body'])
+
+    multipart_decoder = MultipartDecoder(content=form_data, content_type=content_type)
+    for part in multipart_decoder.parts:
+        form_name = get_form_name(part)
+        form_name = form_name if form_name not in bounty_name_map else bounty_name_map[form_name]
+        new_maker_defn[form_name] = part.content.decode()
+
+    maker = Maker(**new_maker_defn, MakerId=str(uuid4()))
+    send_confirmation_to_maker(maker)
+
+    response_template = get_html_template("maker_registration_response_template.html")
+    response_template = response_template.replace("{maker_email}", maker.MakerEmail)
+    return 200, response_template
+
+
+def confirm_maker_registration(event):
+    maker_id = event['pathParameters']['maker_id']
+    try:
+        maker_registration = murd.read_first(group="maker_registrations", sort=maker_id)
+    except Exception:
+        return 404
+
+    maker = Maker.fromm(maker_registration)
+    maker.store()
+    murd.delete([maker_registration])
+    confirmation_template = get_html_template("confirm_maker_registration_template.html")
+    confirmation_template = confirmation_template.replace("{maker_id}", maker.MakerId)
+    return 200, confirmation_template
+
+
 def build_page():
     page = LambdaPage()
-    page.add_endpoint(method="get", path="/rest/upload_reference_material.js", func=render_refmat_upload_script, content_type="text/javascript")
+    page.add_endpoint(method="get", path="/rest/bountyboard", func=handle_get_bountyboard)
+    page.add_endpoint(method="get", path="/rest/bounties_in_progress", func=handle_get_bountyboard)
+    page.add_endpoint(method="get", path="/rest/bounty_portfolio", func=handle_get_bountyboard)
     page.add_endpoint(method="get", path="/rest/bounty_form/{bounty_id}/{refmat_filename}", func=get_refmat_surl)
+
+    # Maker Registration
+    page.add_endpoint(method="post", path="/rest/maker_registration", func=submit_maker_registration, content_type="text/html")
+    page.add_endpoint(method="post", path="/rest/maker_registration/{maker_id}", func=confirm_maker_registration, content_type="text/html")
+
+    # Bounty Submission
+    page.add_endpoint(method="get", path="/rest/upload_reference_material.js", func=render_refmat_upload_script, content_type="text/javascript")
     page.add_endpoint(method="post", path="/rest/bounty_form", func=submit_bounty_form, content_type="text/html")
     page.add_endpoint(method="get", path="/rest/bounty_confirmation/{bounty_confirmation_id}", func=confirm_bounty_creation, content_type="text/html")
     page.add_endpoint(method="post", path="/rest/bounty_confirmation/{bounty_confirmation_id}", func=bounty_confirmed, content_type="text/html")
     page.add_endpoint(method="get", path="/rest/bountyboard/{bounty_id}", func=handle_get_bounty)
+
+    # Edit Bounty
+    page.add_endpoint(method="get", path="/rest/edit_bounty/{bounty_id}", func=get_edit_bounty_form, content_type="text/html")
+    page.add_endpoint(method="post", path="/rest/edit_bounty/{bounty_id}", func=receive_bounty_edit, content_type="text/html")
+
+    # Call Bounty
+    page.add_endpoint(method="get", path="/rest/call_bounty/{bounty_id}", func=get_call_bounty_form, content_type="text/html")
+    page.add_endpoint(method="post", path="/rest/call_bounty/{bounty_id}", func=receive_call_bounty, content_type="text/html")
+    page.add_endpoint(method="get", path="/rest/call_bounty_confirm/{call_confirmation_id}", func=confirm_call_bounty, content_type="text/html")
+
+    # Bounty Pages
     page.add_endpoint(method="get", path="/rest/rendered_bountyboard", func=rendered_bountyboard, content_type="text/html")
     page.add_endpoint(method="get", path="/rest/rendered_bounties_in_progress", func=rendered_bounties_in_progress, content_type="text/html")
     page.add_endpoint(method="get", path="/rest/rendered_bounty_portfolio", func=rendered_bounty_portfolio, content_type="text/html")
     page.add_endpoint(method="get", path="/rest/rendered_bounty/{bounty_id}", func=get_rendered_bounty, content_type="text/html")
-    page.add_endpoint(method="get", path="/rest/bountyboard", func=handle_get_bountyboard)
-    page.add_endpoint(method="get", path="/rest/bounties_in_progress", func=handle_get_bountyboard)
-    page.add_endpoint(method="get", path="/rest/bounty_portfolio", func=handle_get_bountyboard)
-    page.add_endpoint(method="get", path="/rest/edit_bounty/{bounty_id}", func=get_edit_bounty_form, content_type="text/html")
-    page.add_endpoint(method="post", path="/rest/edit_bounty/{bounty_id}", func=receive_bounty_edit, content_type="text/html")
-    page.add_endpoint(method="get", path="/rest/call_bounty/{bounty_id}", func=get_call_bounty_form, content_type="text/html")
-    page.add_endpoint(method="post", path="/rest/call_bounty/{bounty_id}", func=receive_call_bounty, content_type="text/html")
-    page.add_endpoint(method="get", path="/rest/call_bounty_confirm/{call_confirmation_id}", func=confirm_call_bounty, content_type="text/html")
+
     return page
 
 
