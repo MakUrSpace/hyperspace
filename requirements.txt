@@ -1,1 +1,4 @@
--r cloud/requirements.txt
+boto3
+LambdaPage
+murdaws
+requests_toolbelt

@@ -34,7 +34,7 @@ provider:
 functions:
   hyperspace_api:
     name: hyperspace_api
-    handler: hyperspace_api.lambda_handler
+    handler: hyperspace.api.lambda_handler
     memorySize: 128
     timeout: 30
     events:
