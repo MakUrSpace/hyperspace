@@ -7,7 +7,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
   <meta name="description" content="MakUrSpace Bounty Submission Form">
   <meta name="author" content="MakUrSpace, LLC">
-  <title>MakUrSpace Maker Registration</title>
+  <title>MakUrSpace WIP Submission</title>
   <link href="/vendor/bootstrap/css/bootstrap.min.css" rel="stylesheet">
   <link href="/css/modern-business.css" rel="stylesheet">
   <link href="/css/makurspace.css" rel="stylesheet">
@@ -21,41 +21,39 @@
   <div class="container" style="margin-top: 50px; margin-bottom: 30px">
     <ol class="breadcrumb">
       <li class="breadcrumb-item">
-        <h1 class="mt-4 mb-3">Join our maker network!</h1>
+        <h1 class="mt-4 mb-3">Submit a WIP Report</h1>
       </li>
     </ol>
     <div class="row">
       <div class="col-lg-8 mb-4">
-        <form name="sentMessage" id="maker_registration_form" novalidate enctype="multipart/form-data" method="post" action="/rest/maker_registration" enctype="multipart/form-data">
+        <form>
+          <div class="controls">
+            <label>Reference Material:<div id="reference_material_file_list"></div></label>
+            <input type="file" multiple class="form-control" id="ReferenceMaterial" name="ReferenceMaterial" onchange="javascript:upload_reference_material()">
+          </div>
+        </form>
+        <form name="sentMessage" id="bounty_form" novalidate enctype="multipart/form-data" method="post" action="/rest/bounty_form" enctype="multipart/form-data">
           <div class="control-group form-group input-group">
             <div class="controls">
-              <label>Maker Name</label>
-              <input type="text" class="form-control" id="MakerName" name="MakerName" required data-validation-required-message="Please enter a name with which to address you">
+              <label>Percentage Done:</label>
+              <input type="number" min="1" max="100" class="form-control" id="PercentageDone" name="PercentageDone" required data-validation-required-message="Please percentage of the project completed">
               <p class="help-block"></p>
             </div>
           </div>
           <div class="control-group form-group">
             <div class="controls">
-              <label>Maker Email</label>
-              <input type="text" class="form-control" id="MakerEmail" name="MakerEmail" required data-validation-required-message="Please enter an email address at which to contact you">
+              <label>Work completed:</label>
+              <textarea rows="10" cols="100" class="form-control" id="WorkCompleted" name="WorkCompleted" required data-validation-required-message="Please a description of the bounty" rows="5" maxlength="999" style="resize:none"></textarea>
             </div>
           </div>
           <div class="control-group form-group">
             <div class="controls">
-              <label>Do you agree to the MakUrSpace Maker Contract terms and conditions, as defined below?</label>
-	            <ul class="list-group">
-                   <li class="list-group-item">I am a sapient, human individual</li>
-                   <li class="list-group-item">I am a self-employed maker utilizing MakUrSpace to find and facilitate work</li>
-		               <li class="list-group-item">None of MakUrSpace, LLC, a bounty's benefactor, or a bounty's submitter are liable for any injuries I may incur in pursuit of a bounty</li>
-	            </ul>
+              <input type="hidden" class="form-control" id="ReferenceMaterialNames" name="ReferenceMaterialNames" value='[]'>
             </div>
-          </div>
-          <div class="control-group form-group">
-            <input type="checkbox" class="form-control" id="ConfirmedContract" name="ConfirmedContract" required data-validation-required-message="To register as a MakUrSpace Maker, you must agree to the contract">
           </div>
           <div id="success"></div>
           <!-- For success/fail messages -->
-          <button type="submit" class="btn btn-primary" id="submit_registration">Submit Registration</button>
+          <button type="submit" class="btn btn-primary" id="sendMessageButton">Submit Bounty</button>
         </form>
       </div>
 
@@ -69,6 +67,9 @@
     </div>
   </footer>
 
+  <script>
+    {upload_reference_material_js}
+  </script>
   <script src="/vendor/jquery/jquery.min.js"></script>
   <script src="/vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
   <script>
