@@ -2,7 +2,7 @@ from typing import ClassVar
 from datetime import datetime
 from dataclasses import dataclass, asdict
 
-from hyperspace.utilities import email_regex_pattern
+from hyperspace.utilities import sanitize_email
 from hyperspace.murd import mddb, murd, purchase_murd
 
 
@@ -37,13 +37,11 @@ class Bounty:
 
     @property
     def sanitized_contact(self):
-        regexed = email_regex_pattern.match(self.Contact)
-        return regexed.string
+        return sanitize_email(self.Contact)
 
     @property
     def sanitized_maker_email(self):
-        regexed = email_regex_pattern.match(self.MakerEmail)
-        return regexed.string
+        return sanitize_email(self.MakerEmail)
 
     @classmethod
     def fromm(cls, m):
@@ -145,11 +143,14 @@ class Maker:
 
     @property
     def sanitized_maker_email(self):
-        regexed = email_regex_pattern.match(self.MakerEmail)
-        return regexed.string
+        return sanitize_email(self.MakerEmail)
 
     def asm(self):
         return {mddb.group_key: "makers", mddb.sort_key: self.MakerEmail, **asdict(self)}
 
     def store(self):
         murd.update([self.asm()])
+
+    @classmethod
+    def retrieve(cls, maker_email):
+        return cls.fromm(murd.read_first(group="makers", sort=sanitize_email(maker_email)))

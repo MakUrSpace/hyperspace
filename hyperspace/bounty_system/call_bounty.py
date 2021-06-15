@@ -8,7 +8,7 @@ from requests_toolbelt.multipart import MultipartDecoder
 import hyperspace.ses as ses
 from hyperspace.murd import mddb, murd
 from hyperspace.utilities import get_html_template, get_form_name
-from hyperspace.objects import Bounty
+from hyperspace.objects import Bounty, Maker
 
 
 def get_call_bounty_form(event):
@@ -37,7 +37,14 @@ def receive_call_bounty(event):
         form_name = get_form_name(part)
         maker_contact[form_name] = part.content.decode()
 
-    bounty.MakerEmail = maker_contact['maker_email']
+    # Discover maker
+    try:
+        maker = Maker.retrieve(maker_contact['maker_email'])
+    except KeyError:
+        # TODO: email potential new maker (create maker application)
+        raise Exception("Unable to process unregistered maker")
+
+    bounty.MakerEmail = maker.MakerEmail
     confirmation_id = str(uuid4())
     email_template = get_html_template("call_bounty_email.html")
 
