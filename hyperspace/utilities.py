@@ -1,5 +1,6 @@
 import os
 import re
+from datetime import datetime
 
 
 def get_installation_directory():
@@ -38,3 +39,7 @@ email_regex_pattern = re.compile(r"""(?:[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9
 def sanitize_email(email_address):
     regexed = email_regex_pattern.match(email_address)
     return regexed.string
+
+
+def timestamp():
+    return datetime.utcnow().isoformat()

@@ -1,8 +1,9 @@
+import json
 from typing import ClassVar
 from datetime import datetime
 from dataclasses import dataclass, asdict
 
-from hyperspace.utilities import sanitize_email
+from hyperspace.utilities import sanitize_email, timestamp
 from hyperspace.murd import mddb, murd, purchase_murd
 
 
@@ -20,6 +21,11 @@ class Bounty:
     MakerEmail: str = ""
     State: str = "submitted"
     states: ClassVar = ["submitted", "confirmed", "called", "claimed"]
+    SubmissionStamp: str = None
+    ConfirmedStamp: str = None
+    CalledStamp: str = None
+    WipStamp: str = None
+    ClaimedStamp: str = None
 
     @property
     def sanitized_reward(self):
@@ -42,32 +48,6 @@ class Bounty:
     @property
     def sanitized_maker_email(self):
         return sanitize_email(self.MakerEmail)
-
-    @classmethod
-    def fromm(cls, m):
-        kwargs = {k: v for k, v in m.items() if k not in [mddb.group_key, mddb.sort_key, "CREATE_TIME"]}
-        kwargs['BountyId'] = kwargs['BountyName'] if 'BountyId' not in m else kwargs['BountyId']
-        bounty = cls(**kwargs)
-        return bounty
-
-    def asm(self):
-        return {**{mddb.group_key: self.State,
-                   mddb.sort_key: self.BountyId,
-                   "CREATE_TIME": datetime.utcnow().isoformat()},
-                **self.asdict()}
-
-    def asdict(self):
-        return asdict(self)
-
-    def store(self):
-        murd.update([self.asm()])
-
-    def change_state(self, target_state):
-        assert target_state in Bounty.states
-        orig = self.asm()
-        self.State = target_state
-        self.store()
-        murd.delete([orig])
 
     @property
     def primary_image(self):
@@ -100,6 +80,54 @@ class Bounty:
     @classmethod
     def get_bounties(cls, group="confirmed", limit=200):
         return [cls.fromm(b) for b in murd.read(group=group, limit=limit)]
+
+    @classmethod
+    def fromm(cls, m):
+        kwargs = {k: v for k, v in m.items() if k not in [mddb.group_key, mddb.sort_key, "CREATE_TIME"]}
+        kwargs['BountyId'] = kwargs['BountyName'] if 'BountyId' not in m else kwargs['BountyId']
+        bounty = cls(**kwargs)
+        return bounty
+
+    def __repr__(self):
+        return json.dumps(asdict(self), indent=4)
+
+    def __post_init__(self):
+        if self.SubmissionStamp is None:
+            self.SubmissionStamp = timestamp()
+
+    def asdict(self):
+        return asdict(self)
+
+    def asm(self):
+        return {**{mddb.group_key: self.State,
+                   mddb.sort_key: self.BountyId,
+                   "CREATE_TIME": datetime.utcnow().isoformat()},
+                **self.asdict()}
+
+    def change_state(self, target_state):
+        assert target_state in Bounty.states
+        orig = self.asm()
+        self.State = target_state
+        setattr(self, f"{target_state.capitalize()}Stamp", timestamp())
+        self.store()
+        murd.delete([orig])
+
+    def store(self):
+        murd.update([self.asm()])
+
+    def get_stamp(self, state=None):
+        assert state in self.states + ["wip"]
+        return getattr(self, f"{state.capitalize()}Stamp")
+
+    def time_since(self, state=None):
+        if state is None:
+            for state in self.states:
+                if self.get_stamp(state) is not None:
+                    break
+        stamp_string = self.get_stamp(state)
+        if stamp_string is None:
+            return None
+        return (datetime.utcnow() - datetime.fromisoformat(stamp_string)).total_seconds()
 
 
 @dataclass
