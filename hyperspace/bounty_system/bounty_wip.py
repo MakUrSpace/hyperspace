@@ -1,5 +1,7 @@
+from urllib.parse import unquote_plus
+
 from hyperspace.objects import Bounty
-from hyperspace.utilities import get_html_template
+from hyperspace.utilities import get_html_template, get_javascript_template
 from hyperspace import ses
 
 
@@ -31,3 +33,16 @@ def email_wips(bounties):
 
         ses.send_email(subject=f'MakUrSpace WIP Request', sender="commissions@makurspace.com",
                        contact=bounty.sanitized_maker_email, content=wip_email_template)
+
+
+def wip_submission_form(event):
+    """ Build WIP submission form """
+    bounty_id = unquote_plus(event['pathParameters']['bounty_id'])
+    upload_refmat_js = get_javascript_template("upload_reference_material.js").replace("{bounty_id}", bounty_id)
+    form_template = get_html_template("wip_submission_template.html").replace("{upload_reference_material_js}", upload_refmat_js)
+    return 200, form_template
+
+
+def handle_wip_submission(event):
+    """ Accept submission from WIP form """
+    return 200, "not implemented"
