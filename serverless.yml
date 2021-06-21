@@ -24,6 +24,10 @@ provider:
     - Effect: Allow
       Action:
         - s3:*
+      Resource: 'arn:aws:s3:::makurspace-purgatory/*'
+    - Effect: Allow
+      Action:
+        - s3:*
       Resource: 'arn:aws:s3:::makurspace/*'
     - Effect: Allow
       Action:

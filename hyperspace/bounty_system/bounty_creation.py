@@ -10,7 +10,7 @@ from hyperspace.objects import Bounty, PurchaseConfirmation
 from hyperspace.utilities import get_html_template, get_form_name
 import hyperspace.ses as ses
 import hyperspace.s3 as s3
-from hyperspace.reference_material import write_refmat_to_s3
+from hyperspace.reference_material import write_refmat_to_s3, promote_out_of_purgatory
 
 
 def send_bounty_to_contact(new_bounty):
@@ -87,3 +87,5 @@ def bounty_confirmed(event):
     purchase_confirmation.store()
     murd.delete([bounty.asm(), confirmationm])
     bounty.change_state("confirmed")
+    for refmat in bounty.ReferenceMaterial:
+        promote_out_of_purgatory(bounty.BountyId, refmat)

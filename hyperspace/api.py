@@ -18,7 +18,9 @@ def build_page():
     page.add_endpoint(method="get", path="/rest/bountyboard", func=handle_get_bountyboard)
     page.add_endpoint(method="get", path="/rest/bounties_in_progress", func=handle_get_bountyboard)
     page.add_endpoint(method="get", path="/rest/bounty_portfolio", func=handle_get_bountyboard)
-    page.add_endpoint(method="get", path="/rest/bounty_form/{bounty_id}/{refmat_filename}", func=get_refmat_surl)
+
+    # Reference Material Handling
+    page.add_endpoint(method="get", path="/rest/reference_material/{bounty_id}/{refmat_filename}", func=get_refmat_surl)
 
     # Maker Registration
     page.add_endpoint(method="post", path="/rest/maker_registration", func=submit_maker_registration, content_type="text/html")

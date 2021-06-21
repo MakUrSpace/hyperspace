@@ -76,3 +76,12 @@ def delete(s3_path):
     print(f"Deleting {s3_path}")
     s3b = boto3.resource("s3").Bucket(default_bucket)
     s3b.delete_objects(Delete={"Objects": [{"Key": s3_path}]})
+
+
+def copy(s3_path, source_bucket, destination_bucket):
+    print(f"Copying {s3_path} from {source_bucket} to {destination_bucket}")
+    s3c = boto3.client("s3")
+    s3c.copy_object(
+        Bucket=destination_bucket,
+        Key=s3_path,
+        CopySource={'Bucket': source_bucket, 'Key': s3_path})

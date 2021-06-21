@@ -25,7 +25,7 @@ function upload_reference_material(){
   for (var file_index = 0; file_index < refmat.files.length; file_index++){
     file_names.push(refmat.files[file_index].name)
     $.ajax({
-        url : `/rest/bounty_form/{bounty_id}/${refmat.files[file_index].name}`,
+        url : `/rest/reference_material/{bounty_id}/${refmat.files[file_index].name}`,
         type : "GET",
         mimeType : "multipart/form-data",
         cache : false,
