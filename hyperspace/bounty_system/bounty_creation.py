@@ -39,7 +39,6 @@ def send_bounty_to_contact(new_bounty):
 def submit_bounty_form(event):
     s3.write(f"submissions/sub-{uuid4()}", json.dumps(event).encode(), "makurspace")
     new_bounty_defn = {}
-    refmat_material = {}
 
     content_type = event['headers']['content-type']
     form_data = b64decode(event['body'])
@@ -56,8 +55,6 @@ def submit_bounty_form(event):
     new_bounty = Bounty(**new_bounty_defn, BountyId=str(uuid4()))
     try:
         new_bounty.store()
-        for refmat, refmat_content in refmat_material.items():
-            write_refmat_to_s3(new_bounty.BountyName, refmat, refmat_content)
     except Exception:
         print("Deleting bounty")
         murd.delete([new_bounty.asm()])

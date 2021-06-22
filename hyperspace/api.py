@@ -15,11 +15,15 @@ from hyperspace.maker_registration import submit_maker_registration, confirm_mak
 
 def build_page():
     page = LambdaPage()
+
+    # Get bounties
     page.add_endpoint(method="get", path="/rest/bountyboard", func=handle_get_bountyboard)
+    page.add_endpoint(method="get", path="/rest/bountyboard/{bounty_id}", func=handle_get_bounty)
     page.add_endpoint(method="get", path="/rest/bounties_in_progress", func=handle_get_bountyboard)
     page.add_endpoint(method="get", path="/rest/bounty_portfolio", func=handle_get_bountyboard)
 
     # Reference Material Handling
+    page.add_endpoint(method="get", path="/rest/upload_reference_material.js", func=render_refmat_upload_script, content_type="text/javascript")
     page.add_endpoint(method="get", path="/rest/reference_material/{bounty_id}/{refmat_filename}", func=get_refmat_surl)
 
     # Maker Registration
@@ -27,11 +31,9 @@ def build_page():
     page.add_endpoint(method="get", path="/rest/maker_registration/{maker_id}", func=confirm_maker_registration, content_type="text/html")
 
     # Bounty Submission
-    page.add_endpoint(method="get", path="/rest/upload_reference_material.js", func=render_refmat_upload_script, content_type="text/javascript")
     page.add_endpoint(method="post", path="/rest/bounty_form", func=submit_bounty_form, content_type="text/html")
     page.add_endpoint(method="get", path="/rest/bounty_confirmation/{bounty_confirmation_id}", func=confirm_bounty_creation, content_type="text/html")
     page.add_endpoint(method="post", path="/rest/bounty_confirmation/{bounty_confirmation_id}", func=bounty_confirmed, content_type="text/html")
-    page.add_endpoint(method="get", path="/rest/bountyboard/{bounty_id}", func=handle_get_bounty)
 
     # Edit Bounty
     page.add_endpoint(method="get", path="/rest/edit_bounty/{bounty_id}", func=get_edit_bounty_form, content_type="text/html")

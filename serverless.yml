@@ -43,25 +43,10 @@ functions:
     timeout: 30
     events:
       - http:
-          path: /rest/upload_reference_material.js
-          method: get
-      - http:
-          path: /rest/maker_registration
-          method: post
-      - http:
-          path: /rest/maker_registration/{maker_id}
-          method: get
-      - http:
-          path: /rest/bountyboard
-          method: post
-      - http:
           path: /rest/bountyboard
           method: get
       - http:
           path: /rest/bountyboard/{bounty_id}
-          method: get
-      - http:
-          path: /rest/bountyboard
           method: get
       - http:
           path: /rest/bounties_in_progress
@@ -70,16 +55,16 @@ functions:
           path: /rest/bounty_portfolio
           method: get
       - http:
-          path: /rest/rendered_bountyboard
+          path: /rest/upload_reference_material.js
           method: get
       - http:
-          path: /rest/rendered_bounties_in_progress
+          path: /rest/reference_material/{bounty_id}/{refmat_filename}
           method: get
       - http:
-          path: /rest/rendered_bounty_portfolio
-          method: get
+          path: /rest/maker_registration
+          method: post
       - http:
-          path: /rest/rendered_bounty/{bounty_id}
+          path: /rest/maker_registration/{maker_id}
           method: get
       - http:
           path: /rest/bounty_form/{bounty_id}/{refmat_filename}
@@ -107,6 +92,27 @@ functions:
           method: post
       - http:
           path: /rest/call_bounty_confirm/{call_confirmation_id}
+          method: get
+      - http:
+          path: /rest/relinquish_bounty/{bounty_id}
+          method: get
+      - http:
+          path: /rest/bounty_wip/{bounty_id}
+          method: get
+      - http:
+          path: /rest/bounty_wip/{bounty_id}
+          method: post
+      - http:
+          path: /rest/rendered_bountyboard
+          method: get
+      - http:
+          path: /rest/rendered_bounties_in_progress
+          method: get
+      - http:
+          path: /rest/rendered_bounty_portfolio
+          method: get
+      - http:
+          path: /rest/rendered_bounty/{bounty_id}
           method: get
 
 custom:
