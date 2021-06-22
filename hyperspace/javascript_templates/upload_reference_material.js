@@ -60,3 +60,8 @@ function upload_reference_material(){
     }
   document.getElementById('ReferenceMaterialNames').value = JSON.stringify(file_names)
 }
+
+window.addEventListener('load', function() {
+    console.log('All assets are loaded')
+    document.getElementById('BountyId').value = "{bounty_id}"
+})

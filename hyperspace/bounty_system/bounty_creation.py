@@ -10,7 +10,6 @@ from hyperspace.objects import Bounty, PurchaseConfirmation
 from hyperspace.utilities import get_html_template, get_form_name
 import hyperspace.ses as ses
 import hyperspace.s3 as s3
-from hyperspace.reference_material import write_refmat_to_s3, promote_out_of_purgatory
 
 
 def send_bounty_to_contact(new_bounty):
@@ -52,7 +51,7 @@ def submit_bounty_form(event):
         else:
             new_bounty_defn[form_name] = part.content.decode()
 
-    new_bounty = Bounty(**new_bounty_defn, BountyId=str(uuid4()))
+    new_bounty = Bounty(**new_bounty_defn)
     try:
         new_bounty.store()
     except Exception:
@@ -82,7 +81,4 @@ def bounty_confirmed(event):
     bounty = Bounty.get_bounty(confirmationm['BountyId'])
     purchase_confirmation = PurchaseConfirmation(**json.loads(event['body']))
     purchase_confirmation.store()
-    murd.delete([bounty.asm(), confirmationm])
     bounty.change_state("confirmed")
-    for refmat in bounty.ReferenceMaterial:
-        promote_out_of_purgatory(bounty.BountyId, refmat)

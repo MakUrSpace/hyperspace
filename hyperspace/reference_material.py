@@ -15,11 +15,6 @@ def get_refmat_surl(event):
     return 200, s3.presigned_write_url(file_path)
 
 
-def promote_out_of_purgatory(bounty_id, refmat_name):
-    file_path = s3_path(bounty_id=bounty_id, refmat_filename=refmat_name)
-    s3.copy(file_path, "makurspace-purgatory", s3.default_bucket)
-
-
 def render_refmat_upload_script(event):
     script_template = get_javascript_template("upload_reference_material.js")
     return 200, script_template.replace("{bounty_id}", str(uuid4()))

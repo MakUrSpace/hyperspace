@@ -102,3 +102,8 @@ venv.bak/
 
 # mypy
 .mypy_cache/
+
+__pycache__/
+.serverless/
+node_modules/
+package*.json
