@@ -100,7 +100,13 @@ functions:
           path: /rest/bounty_wip/{bounty_id}
           method: get
       - http:
-          path: /rest/bounty_wip/{bounty_id}
+          path: /rest/bounty_wip
+          method: post
+      - http:
+          path: /rest/claim_bounty/{bounty_id}
+          method: get
+      - http:
+          path: /rest/claim_bounty
           method: post
       - http:
           path: /rest/rendered_bountyboard

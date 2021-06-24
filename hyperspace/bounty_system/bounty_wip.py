@@ -1,7 +1,11 @@
 from urllib.parse import unquote_plus
+from base64 import b64decode
+import json
+
+from requests_toolbelt.multipart import MultipartDecoder
 
 from hyperspace.objects import Bounty
-from hyperspace.utilities import get_html_template, get_javascript_template
+from hyperspace.utilities import get_html_template, get_javascript_template, get_form_name
 from hyperspace import ses
 
 
@@ -45,4 +49,23 @@ def wip_submission_form(event):
 
 def handle_wip_submission(event):
     """ Accept submission from WIP form """
-    return 200, "not implemented"
+    content_type = event['headers']['content-type']
+    form_data = b64decode(event['body'])
+    wip_submission = {}
+    multipart_decoder = MultipartDecoder(content=form_data, content_type=content_type)
+    for part in multipart_decoder.parts:
+        form_name = get_form_name(part)
+        assert form_name in ["PercentageDone", "WorkCompleted", "ReferenceMaterialNames", "BountyId"], \
+            f"Unrecognized form name: {form_name}"
+        if form_name == 'ReferenceMaterialNames':
+            wip_submission['ReferenceMaterial'] = json.loads(part.content)
+        else:
+            wip_submission[form_name] = part.content.decode()
+
+    bounty = Bounty.get_bounty(bounty_id=wip_submission.pop("BountyId"))
+    bounty.wip_bounty(**wip_submission)
+
+    response_template = get_html_template("bounty_wipped.html").replace(
+        "{bounty_name}", bounty.BountyName)
+
+    return 200, response_template

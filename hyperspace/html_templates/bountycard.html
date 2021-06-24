@@ -30,11 +30,10 @@
       <div class="col-md-4">
         <h3 class="my-3">Reward: {bounty_reward}</h3>
         <h3 class="my-3">Description</h3>
-        <p>{bounty_description}</p>
         <!-- Add better formatting. Expect Markdown? -->
+        <p>{bounty_description}</p>
         <div class="container">
-          <button class="col btn btn-primary" id="suggest_edit_button" style="margin-bottom: 7px" onclick="location.href='/rest/edit_bounty/{bounty_id}';">Suggest Edit</button>
-          <button class="col btn btn-primary" id="make_this_button" onclick="location.href='/rest/call_bounty/{bounty_id}';">I can make this!</button>
+          {interactions}
         </div>
       </div>
 

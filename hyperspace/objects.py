@@ -26,6 +26,9 @@ class Bounty:
     CalledStamp: str = None
     WipStamp: str = None
     ClaimedStamp: str = None
+    PercentageDone: int = 0
+    WorkCompleted: str = ""
+    FinalImages: list = None
 
     @property
     def sanitized_reward(self):
@@ -128,6 +131,18 @@ class Bounty:
         if stamp_string is None:
             return None
         return (datetime.utcnow() - datetime.fromisoformat(stamp_string)).total_seconds()
+
+    def wip_bounty(self, PercentageDone, WorkCompleted, ReferenceMaterial):
+        self.PercentageDone = PercentageDone
+        self.WorkCompleted = f"{self.WorkCompleted}\n\n{WorkCompleted}" if self.WorkCompleted is not None else WorkCompleted
+        self.ReferenceMaterial = list(set(self.ReferenceMaterial + ReferenceMaterial))
+        setattr(self, f"WipStamp", timestamp())
+        self.store()
+
+    def claim_bounty(self, CompletionNotes, FinalImages):
+        self.FinalImages = FinalImages
+        self.CompletionNotes = CompletionNotes
+        self.change_state("claimed")
 
 
 @dataclass
