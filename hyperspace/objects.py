@@ -27,7 +27,7 @@ class Bounty:
     CalledStamp: str = None
     WipStamp: str = None
     ClaimedStamp: str = None
-    PercentageDone: int = 0
+    PercentageDone: float = 0
     WorkCompleted: str = ""
     FinalImages: list = None
 
@@ -91,6 +91,10 @@ class Bounty:
     def fromm(cls, m):
         kwargs = {k: v for k, v in m.items() if k not in [mddb.group_key, mddb.sort_key, "CREATE_TIME"]}
         kwargs['BountyId'] = kwargs['BountyName'] if 'BountyId' not in m else kwargs['BountyId']
+        if 'PercentageDone' in kwargs:
+            kwargs['PercentageDone'] = float(kwargs['PercentageDone'])
+        else:
+            kwargs['PercentageDone'] = 0
         bounty = cls(**kwargs)
         return bounty
 
@@ -108,7 +112,8 @@ class Bounty:
         return {**{mddb.group_key: self.State,
                    mddb.sort_key: self.BountyId,
                    "CREATE_TIME": datetime.utcnow().isoformat()},
-                **self.asdict()}
+                **self.asdict(),
+                "PercentageDone": json.dumps(self.PercentageDone)}
 
     def change_state(self, target_state):
         assert target_state in Bounty.states
@@ -136,7 +141,7 @@ class Bounty:
         return (datetime.utcnow() - datetime.fromisoformat(stamp_string)).total_seconds()
 
     def wip_bounty(self, PercentageDone, WorkCompleted, ReferenceMaterial):
-        self.PercentageDone = PercentageDone
+        self.PercentageDone = float(PercentageDone)
         self.WorkCompleted = f"{self.WorkCompleted}\n\n{WorkCompleted}" if self.WorkCompleted is not None else WorkCompleted
         self.ReferenceMaterial = list(set(self.ReferenceMaterial + ReferenceMaterial))
         setattr(self, f"WipStamp", timestamp())

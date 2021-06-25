@@ -37,6 +37,7 @@ def handle_bounty_claim(event):
     bounty.claim_bounty(**claim)
 
     response_template = get_html_template("bounty_claimed.html").replace(
-        "{bounty_name}", bounty.BountyName)
+        "{bounty_name}", bounty.BountyName).replace(
+        "{bounty_amount}", bounty.reward)
 
     return 200, response_template
