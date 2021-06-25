@@ -2,6 +2,7 @@ import json
 from typing import ClassVar
 from datetime import datetime
 from dataclasses import dataclass, asdict
+import random
 
 from hyperspace.utilities import sanitize_email, timestamp
 from hyperspace.murd import mddb, murd, purchase_murd
@@ -55,10 +56,12 @@ class Bounty:
     @property
     def primary_image(self):
         formats = ["jpg", "jpeg", "png"]
-        for refmat in self.ReferenceMaterial:
-            filetype = refmat.split(".")[-1]
+        file_list = self.FinalImages if self.FinalImages is not None else self.ReferenceMaterial
+        random.shuffle(file_list)
+        for filename in file_list:
+            filetype = filename.split(".")[-1].lower()
             if filetype in formats:
-                return refmat
+                return filename
         return None
 
     def image_path(self, image):
