@@ -74,7 +74,7 @@ def submit_bounty_or_return_form(event):
         bounty_form = bounty_form.replace(
             "Submit a Bounty!",
             f"Failed to submit previous bounty:<br>{e}<br>Try Again or contact support@makurspace.com")
-        return 503, bounty_form
+        return 400, bounty_form
 
 
 def confirm_bounty_creation(event):
