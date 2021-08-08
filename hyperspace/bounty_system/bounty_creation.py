@@ -66,6 +66,17 @@ def submit_bounty_form(event):
     return 200, response_template
 
 
+def submit_bounty_or_return_form(event):
+    try:
+        return submit_bounty_form(event)
+    except Exception as e:
+        bounty_form = get_html_template("bounty_submission_form.html")
+        bounty_form = bounty_form.replace(
+            "Submit a Bounty!",
+            f"Failed to submit previous bounty:<br>{e}<br>Try Again or contact support@makurspace.com")
+        return 503, bounty_form
+
+
 def confirm_bounty_creation(event):
     confirmation_id = event['pathParameters']['bounty_confirmation_id']
     confirmationm = murd.read_first(group="bounty_creation_confirmations", sort=confirmation_id)

@@ -4,7 +4,7 @@ from LambdaPage import LambdaPage
 
 from hyperspace.bounty_system.get_bounty import handle_get_bountyboard, handle_get_bounty
 from hyperspace.bounty_system.render_bounties import rendered_bountyboard, rendered_bounties_in_progress, rendered_bounty_portfolio, get_rendered_bounty
-from hyperspace.bounty_system.bounty_creation import submit_bounty_form, confirm_bounty_creation, bounty_confirmed
+from hyperspace.bounty_system.bounty_creation import submit_bounty_or_return_form, confirm_bounty_creation, bounty_confirmed
 from hyperspace.bounty_system.edit_bounty import get_edit_bounty_form, receive_bounty_edit
 from hyperspace.bounty_system.call_bounty import get_call_bounty_form, receive_call_bounty, confirm_call_bounty
 from hyperspace.bounty_system.bounty_wip import wip_submission_form, handle_wip_submission
@@ -32,7 +32,7 @@ def build_page():
     page.add_endpoint(method="get", path="/rest/maker_registration/{maker_id}", func=confirm_maker_registration, content_type="text/html")
 
     # Bounty Submission
-    page.add_endpoint(method="post", path="/rest/bounty_form", func=submit_bounty_form, content_type="text/html")
+    page.add_endpoint(method="post", path="/rest/bounty_form", func=submit_bounty_or_return_form, content_type="text/html")
     page.add_endpoint(method="get", path="/rest/bounty_confirmation/{bounty_confirmation_id}", func=confirm_bounty_creation, content_type="text/html")
     page.add_endpoint(method="post", path="/rest/bounty_confirmation/{bounty_confirmation_id}", func=bounty_confirmed, content_type="text/html")
 
