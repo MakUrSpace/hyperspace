@@ -85,7 +85,7 @@ def get_bounty_by_confirmation(confirmation_id):
 def confirm_bounty_creation(event):
     confirmation_id = event['pathParameters']['bounty_confirmation_id']
     bounty = get_bounty_by_confirmation(confirmation_id)
-    if bounty.Benefactor.lower() in ['musingsole', 'mus', 'btrain', 'shaq', 'briana']:
+    if bounty.Benefactor.lower() in ['musingsole', 'mus', 'btrain', 'shaquille', 'briana']:
         bounty.set_state("confirmed")
         bounty_form = get_html_template("bounty_submission_form.html")
         bounty_form = bounty_form.replace("Submit a Bounty!", "Bounty Submitted!!! Another?")

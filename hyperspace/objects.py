@@ -212,3 +212,7 @@ class Maker:
     @classmethod
     def retrieve(cls, maker_email):
         return cls.fromm(murd.read_first(group="makers", sort=sanitize_email(maker_email)))
+
+    @classmethod
+    def get_makers(cls, limit=200):
+        return [cls.fromm(b) for b in murd.read(group="makers", limit=limit)]

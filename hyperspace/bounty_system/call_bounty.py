@@ -77,8 +77,7 @@ def confirm_call_bounty(event):
     bounty = Bounty.get_bounty(confirmationm['BountyId'])
     bounty.MakerName = confirmationm['MakerName']
     bounty.MakerEmail = confirmationm['MakerEmail']
-    murd.delete([bounty.asm()])
-    bounty.change_state("called")
+    bounty.change_state(target_state="called", from_state="confirmed")
 
     called_bounty_confirmation = get_html_template("called_confirmation.html").replace("{bounty_name}", bounty.BountyName)
 
