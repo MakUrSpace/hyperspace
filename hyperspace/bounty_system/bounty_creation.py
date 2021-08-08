@@ -77,10 +77,19 @@ def submit_bounty_or_return_form(event):
         return 400, bounty_form
 
 
+def get_bounty_by_confirmation(confirmation_id):
+    confirmationm = murd.read_first(group="bounty_creation_confirmations", sort=confirmation_id)
+    return Bounty.get_bounty(confirmationm['BountyId'])
+
+
 def confirm_bounty_creation(event):
     confirmation_id = event['pathParameters']['bounty_confirmation_id']
-    confirmationm = murd.read_first(group="bounty_creation_confirmations", sort=confirmation_id)
-    Bounty.get_bounty(confirmationm['BountyId'])
+    bounty = get_bounty_by_confirmation(confirmation_id)
+    if bounty.Benefactor.lower() in ['musingsole', 'mus', 'btrain', 'shaq', 'briana']:
+        bounty.set_state("confirmed")
+        bounty_form = get_html_template("bounty_submission_form.html")
+        bounty_form = bounty_form.replace("Submit a Bounty!", "Bounty Submitted!!! Another?")
+        return 200, bounty_form
     confirmation_template = get_html_template("confirm_bounty.html")
     confirmation_template = confirmation_template.replace("{bounty_confirmation_id}", confirmation_id)
     return 200, confirmation_template
@@ -88,8 +97,7 @@ def confirm_bounty_creation(event):
 
 def bounty_confirmed(event):
     confirmation_id = event['pathParameters']['bounty_confirmation_id']
-    confirmationm = murd.read_first(group="bounty_creation_confirmations", sort=confirmation_id)
-    bounty = Bounty.get_bounty(confirmationm['BountyId'])
+    bounty = get_bounty_by_confirmation(confirmation_id)
     purchase_confirmation = PurchaseConfirmation(**json.loads(event['body']))
     purchase_confirmation.store()
-    bounty.change_state("confirmed")
+    bounty.change_state("confirmed", from_state="submitted")

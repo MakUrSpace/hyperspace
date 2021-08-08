@@ -115,13 +115,20 @@ class Bounty:
                 **self.asdict(),
                 "PercentageDone": json.dumps(self.PercentageDone)}
 
-    def change_state(self, target_state):
+    def set_state(self, target_state):
         assert target_state in Bounty.states
-        orig = self.asm()
-        self.State = target_state
-        setattr(self, f"{target_state.capitalize()}Stamp", timestamp())
-        self.store()
-        murd.delete([orig])
+        if target_state != self.State:
+            orig = self.asm()
+            self.State = target_state
+            setattr(self, f"{target_state.capitalize()}Stamp", timestamp())
+            self.store()
+            murd.delete([orig])
+
+    def change_state(self, target_state, from_state=None):
+        if from_state is not None:
+            assert self.State == from_state
+        assert target_state != self.State
+        self.set_state(target_state)
 
     def store(self):
         murd.update([self.asm()])
