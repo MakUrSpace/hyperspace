@@ -1,6 +1,6 @@
 from datetime import datetime
 
-from LambdaPage import LambdaPage
+from hyperspace.LambdaPage import LambdaPage
 
 from hyperspace.bounty_system.get_bounty import handle_get_bountyboard, handle_get_bounty
 from hyperspace.bounty_system.render_bounties import rendered_bountyboard, rendered_bounties_in_progress, rendered_bounty_portfolio, get_rendered_bounty
