@@ -4,9 +4,14 @@ HyperSpace is the MakUrSpace operations and logistics system composed of a front
 
 ## Setup
 
-* Create AWS Account
-* Configure environment for AWS (create .aws/credentials and .aws/config files)
-* Install Python 3
+* [Create AWS Account](https://aws.amazon.com/)
+* Configure environment for AWS access
+  * [Create IAM Admin user](https://docs.aws.amazon.com/IAM/latest/UserGuide/id_users_create.html#id_users_create_console)
+  * [Create admin user access key and secret](https://docs.aws.amazon.com/IAM/latest/UserGuide/id_credentials_access-keys.html)
+  * Configure environment for AWS (create .aws/credentials and .aws/config files)
+* [Install Python 3](https://www.python.org/downloads/)
+* [Install NodeJS (for serverless)](https://nodejs.org/en/download/)
+* [Install Serverless Framework](https://www.serverless.com/framework/docs/getting-started/)
 * Install python requirements: `pip3 install -r requirements.txt`
 
 
