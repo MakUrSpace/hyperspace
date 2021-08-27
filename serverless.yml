@@ -35,12 +35,20 @@ provider:
         - ses:SendRawEmail
       Resource: '*'
 
+package:
+  individually: true
+  exclude:
+    - ./**
+
 functions:
   hyperspace_api:
     name: hyperspace_api
     handler: hyperspace.api.lambda_handler
     memorySize: 128
     timeout: 30
+    package:
+      include:
+        - hyperspace/**
     events:
       - http:
           path: /rest/bountyboard
