@@ -10,9 +10,10 @@ def get_static_path(event):
     path = f"./frontend/{path}"
     print(f"Opening {path}")
     file_type = path.split(".")[-1]
-    binary_types = ["png", "jpg"]
+    binary_types = ["png", "jpg", "ico"]
 
     read_type = "rb" if file_type in binary_types else "r"
+    print(f"Reading: {path} | {read_type}")
     with open(path, read_type) as f:
         page = f.read()
 
@@ -22,7 +23,8 @@ def get_static_path(event):
         "json": "application/json",
         "js": "text/javascript",
         "png": "image/png",
-        "jpg": "image/jpg"
+        "jpg": "image/jpg",
+        "ico": "image/jpg"
     }
     get_static_path.headers["content-type"] = content_map[file_type]
     return 200, page
@@ -36,6 +38,7 @@ def get_filler(event):
 
 
 if __name__ == "__main__":
+    print("Launching server on localhost:9000")
     page = build_page()
     page.add_endpoint(method="get", path="/bountyboard/{static_path}/{static_path1}", func=get_filler)
     page.add_endpoint(method="get", path="/{static_path}", func=get_static_path)

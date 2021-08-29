@@ -24,12 +24,18 @@ def get_rendered_bounty(event):
 
     template = get_html_template("bountycard.html")
 
+    secondary_images = []
+    sec_img_template = """<div class="col-sm"><img class="d-block w-100" src="{src_url}" alt="{alt_text}"></div>"""
+    for sec_img in bounty.secondary_images:
+        secondary_images.append(sec_img_template.format(src_url=bounty.image_path(sec_img), alt_text=""))
+
     for pattern, replacement in {
             "{interactions}": interactions,
             "{bounty_name}": bounty.BountyName,
             "{bounty_id}": bounty.BountyId,
             "{bounty_reward}": bounty.reward,
             "{primary_image}": bounty.image_path(bounty.primary_image),
+            "{secondary_images}": "\n".join(secondary_images),
             "{bounty_description}": bounty.BountyDescription}.items():
         template = template.replace(pattern, replacement)
 

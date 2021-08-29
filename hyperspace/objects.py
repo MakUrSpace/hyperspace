@@ -31,6 +31,8 @@ class Bounty:
     WorkCompleted: str = ""
     FinalImages: list = None
 
+    lazy_primary_image = None
+
     @property
     def sanitized_reward(self):
         sanitized_reward = self.Bounty
@@ -53,16 +55,33 @@ class Bounty:
     def sanitized_maker_email(self):
         return sanitize_email(self.MakerEmail)
 
+    @staticmethod
+    def get_filetype(filename):
+        return filename.split(".")[-1].lower()
+
     @property
     def primary_image(self):
+        if self.lazy_primary_image is not None:
+            return self.lazy_primary_image
+        else:
+            formats = ["jpg", "jpeg", "png"]
+            file_list = self.FinalImages if self.FinalImages is not None else self.ReferenceMaterial
+            random.shuffle(file_list)
+            for filename in file_list:
+                filetype = self.get_filetype(filename)
+                if filetype in formats:
+                    self.lazy_primary_image = filename
+                    return self.lazy_primary_image
+            return None
+
+    @property
+    def secondary_images(self):
         formats = ["jpg", "jpeg", "png"]
         file_list = self.FinalImages if self.FinalImages is not None else self.ReferenceMaterial
-        random.shuffle(file_list)
-        for filename in file_list:
-            filetype = filename.split(".")[-1].lower()
-            if filetype in formats:
-                return filename
-        return None
+        file_list = [file
+                     for file in file_list
+                     if self.get_filetype(file) in formats and file != self.primary_image]
+        return file_list
 
     def image_path(self, image):
         return f"/bountyboard/{self.BountyId}/{image}"
