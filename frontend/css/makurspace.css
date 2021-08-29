@@ -10,7 +10,7 @@ body {
 .carousel-item {
   margin-top: 50px;
   width: 100%;
-  height:  32vh;
+  height:  35vh;
   min-height: 150px;
   background: no-repeat center center scroll;
   -webkit-background-size: cover;
