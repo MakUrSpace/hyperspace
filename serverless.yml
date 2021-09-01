@@ -3,6 +3,7 @@ service: hyperspace-api
 plugins:
   - serverless-python-requirements
   - serverless-apigw-binary
+  - serverless-s3-sync
 provider:
   name: aws
   stage: prod
@@ -20,20 +21,27 @@ provider:
     - Effect: Allow
       Action:
         - s3:*
-      Resource: 'arn:aws:s3:::makurspace-static-assets/*'
+      Resource: 'arn:aws:s3:::${env:MakurspaceStaticAssets}/*'
     - Effect: Allow
       Action:
         - s3:*
-      Resource: 'arn:aws:s3:::makurspace-purgatory/*'
-    - Effect: Allow
-      Action:
-        - s3:*
-      Resource: 'arn:aws:s3:::makurspace/*'
+      Resource: 'arn:aws:s3:::${env:MakurspaceEnv}/*'
     - Effect: Allow
       Action:
         - ses:SendEmail
         - ses:SendRawEmail
       Resource: '*'
+
+resources:
+  Resources:
+    MakUrSpaceStaticAssets:
+      Type: AWS::S3::Bucket
+      Properties:
+        BucketName: ${env:MakurspaceStaticAssets}
+        AccessControl: PublicRead
+        WebsiteConfiguration:
+          IndexDocument: index.html
+          ErrorDocument: error.html
 
 package:
   individually: true
@@ -136,4 +144,8 @@ custom:
   apigwBinary:
     types:
       - 'multipart/form-data'
-
+  s3Sync:
+    - bucketName: ${env:MakurspaceStaticAssets}
+      localDir: ./static
+      deleteRemoved: false
+      acl: public-read

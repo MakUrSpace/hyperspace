@@ -1,9 +1,10 @@
 import json
 from io import BytesIO
 import boto3
+import os
 
 
-default_bucket = "makurspace-static-assets"
+default_bucket = os.environ.get("MakurspaceStaticAssets", "makerspace-dev-static-assets")
 
 
 def retrieve(s3_path):
