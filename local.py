@@ -7,7 +7,7 @@ def get_static_path(event):
         for key, sp in event['pathParameters'].items()
         if "static_path" in key[:len("static_path")]
     ])
-    path = f"./frontend/{path}"
+    path = f"./static/{path}"
     print(f"Opening {path}")
     file_type = path.split(".")[-1]
     binary_types = ["png", "jpg", "ico"]
