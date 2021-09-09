@@ -13,7 +13,7 @@ resources:
     MakUrSpaceStaticAssets:
       Type: AWS::S3::Bucket
       Properties:
-        BucketName: makurspace-static-assets
+        BucketName: ${env:MakurspaceStaticAssets}
         AccessControl: PublicRead
         WebsiteConfiguration:
           IndexDocument: index.html
@@ -22,7 +22,7 @@ resources:
 
 custom:
   s3Sync:
-    - bucketName: makurspace-static-assets
+    - bucketName: ${env:MakurspaceStaticAssets}
       localDir: ./
       deleteRemoved: false
       acl: public-read

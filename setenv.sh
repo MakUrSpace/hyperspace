@@ -3,7 +3,7 @@ case $AWS_PROFILE in
 	mus)
 		echo "Configuring for MUS production"
 		export MakurspaceEnv="makurspace"
-		export MakurspaceStaticAssets="MakurspaceStaticAssets"
+		export MakurspaceStaticAssets="makurspace-static-assets"
 		echo 'default_bucket = "makurspace-static-assets"' > hyperspace/profile.py
 		;;
 	musint)

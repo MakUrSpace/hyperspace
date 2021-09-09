@@ -33,6 +33,7 @@ class LambdaPage:
         else:
             resp = None
         if resp is None:
+            event['headers'] = {key.lower(): value for key, value in event['headers'].items()}
             resp = func(event)
             if self.cache is not None and func.enable_caching:
                 self.cache.store(event, resp)

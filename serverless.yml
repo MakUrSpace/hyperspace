@@ -3,7 +3,6 @@ service: hyperspace-api
 plugins:
   - serverless-python-requirements
   - serverless-apigw-binary
-  - serverless-s3-sync
 provider:
   name: aws
   stage: prod
@@ -32,21 +31,10 @@ provider:
         - ses:SendRawEmail
       Resource: '*'
 
-resources:
-  Resources:
-    MakUrSpaceStaticAssets:
-      Type: AWS::S3::Bucket
-      Properties:
-        BucketName: ${env:MakurspaceStaticAssets}
-        AccessControl: PublicRead
-        WebsiteConfiguration:
-          IndexDocument: index.html
-          ErrorDocument: error.html
-
 package:
   individually: true
-  exclude:
-    - ./**
+  patterns:
+    - '!./**'
 
 functions:
   hyperspace_api:
@@ -55,8 +43,8 @@ functions:
     memorySize: 128
     timeout: 30
     package:
-      include:
-        - hyperspace/**
+      patterns:
+        - 'hyperspace/**'
     events:
       - http:
           path: /rest/bountyboard
@@ -140,12 +128,8 @@ functions:
 custom:
   pythonRequirements:
     dockerizePip: non-linux
+    useDownloadCache: false
     noDeploy: []
   apigwBinary:
     types:
       - 'multipart/form-data'
-  s3Sync:
-    - bucketName: ${env:MakurspaceStaticAssets}
-      localDir: ./static
-      deleteRemoved: false
-      acl: public-read

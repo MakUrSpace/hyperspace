@@ -31,12 +31,12 @@
     "dependencies": {
         "bootstrap": "4.5.3",
         "jquery": "3.5.1",
-        "serverless": "^2.39.0"
+        "websocket": "^1.0.34"
     },
     "devDependencies": {
-        "browser-sync": "2.26.13",
+        "browser-sync": "^2.27.5",
         "del": "6.0.0",
-        "gulp": "4.0.2",
+        "gulp": "^4.0.2",
         "merge-stream": "2.0.0",
         "serverless-s3-sync": "^1.17.1"
     }
