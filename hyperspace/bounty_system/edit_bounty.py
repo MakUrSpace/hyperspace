@@ -1,3 +1,4 @@
+from uuid import uuid4
 from urllib.parse import unquote_plus
 from base64 import b64decode
 
@@ -5,6 +6,7 @@ from requests_toolbelt.multipart import MultipartDecoder
 
 from hyperspace.utilities import get_html_template, get_javascript_template, get_form_name
 from hyperspace.objects import Bounty
+import hyperspace.ses as ses
 
 
 def get_edit_bounty_form(event):
@@ -23,6 +25,20 @@ def get_edit_bounty_form(event):
         form_template = form_template.replace(pattern, replacement)
 
     return 200, form_template
+
+
+def send_bounty_edit_to_benefactor(new_bounty):
+    email_template = get_html_template("bounty_suggestion_email_template.html")
+
+    for key, value in new_bounty.asdict().items():
+        email_template = email_template.replace(f"{{{key}}}", f"{value}")
+
+    bounty_edit_id = str(uuid4())
+    email_template = email_template.replace("{bounty_edit_id}", bounty_edit_id)
+    email_template = email_template.replace("{BountyReward}", new_bounty.reward)
+
+    ses.send_email(subject=f"{new_bounty.BountyName} Bounty Suggested Edits", sender="commissions@makurspace.com",
+                   contact=new_bounty.sanitized_contact, content=email_template)
 
 
 def receive_bounty_edit(event):
