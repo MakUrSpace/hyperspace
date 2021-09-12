@@ -41,7 +41,7 @@ def send_bounty_edit_to_benefactor(new_bounty):
                    contact=new_bounty.sanitized_contact, content=email_template)
 
 
-def receive_bounty_edit(event):
+def receive_bounty_edits(event):
     bounty_id = unquote_plus(event['pathParameters']['bounty_id'])
     bounty = Bounty.get_bounty(bounty_id)
     bounty_edit = {}
@@ -57,3 +57,11 @@ def receive_bounty_edit(event):
     bounty.BountyName = bounty_edit['BountyName']
     # murd.update([bounty.asm()])
     return 200, ""
+
+
+def submit_bounty_edits(event):
+    return 503, "Not implemented"
+
+
+def confirm_bounty_edits(event):
+    return 503, "Not implemented"
