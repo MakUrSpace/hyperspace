@@ -3,6 +3,8 @@ import json
 import hashlib
 from datetime import datetime
 from io import BytesIO
+from traceback import format_exc
+from hyperspace.utilities import get_html_template
 
 
 binary_content_types = ['image/jpeg', 'image/png', 'multipart/form-data']
@@ -19,6 +21,7 @@ class LambdaPage:
             self.endpoints[path] = {}
         func.headers = {"content-type": content_type}
         func.enable_caching = enable_caching
+
         self.endpoints[path][method] = func
 
     def handle_request(self, event):
@@ -34,7 +37,14 @@ class LambdaPage:
             resp = None
         if resp is None:
             event['headers'] = {key.lower(): value for key, value in event['headers'].items()}
-            resp = func(event)
+            try:
+                resp = func(event)
+            except Exception as exception:
+                error_page = get_html_template("error.html")
+                error_page = error_page.replace("{exception}", str(exception))
+                print(f"ERROR: {format_exc()}")
+                resp = 503, error_page
+
             if self.cache is not None and func.enable_caching:
                 self.cache.store(event, resp)
         else:

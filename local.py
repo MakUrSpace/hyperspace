@@ -24,7 +24,8 @@ def get_static_path(event):
         "js": "text/javascript",
         "png": "image/png",
         "jpg": "image/jpg",
-        "ico": "image/jpg"
+        "ico": "image/jpg",
+        "map": "application/json"
     }
     get_static_path.headers["content-type"] = content_map[file_type]
     return 200, page
