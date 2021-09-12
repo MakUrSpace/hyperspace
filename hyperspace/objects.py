@@ -230,7 +230,11 @@ class Maker:
 
     @classmethod
     def retrieve(cls, maker_email):
-        return cls.fromm(murd.read_first(group="makers", sort=sanitize_email(maker_email)))
+        try:
+            maker_email = sanitize_email(maker_email)
+            return cls.fromm(murd.read_first(group="makers", sort=maker_email))
+        except Exception:
+            raise Exception(f"Unable to locate Maker {maker_email}")
 
     @classmethod
     def get_makers(cls, limit=200):
