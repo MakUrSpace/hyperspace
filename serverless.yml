@@ -45,6 +45,8 @@ functions:
     package:
       patterns:
         - 'hyperspace/**'
+    environment:
+      MakurspaceStaticAssets: ${env:MakurspaceStaticAssets} 
     events:
       - http:
           path: /rest/bountyboard

@@ -13,7 +13,6 @@
   <link href="/css/makurspace.css" rel="stylesheet">
 
   <link rel="shortcut icon" href="/MakUrSpace_Logo.png" type="image/x-icon">
-
 </head>
 
 <body>
@@ -21,14 +20,14 @@
   <div class="container" style="margin-top: 50px; margin-bottom: 30px">
     <ol class="breadcrumb">
       <li class="breadcrumb-item">
-        <h1 class="mt-4 mb-3">Submit a Bounty!</h1>
+        <h1 id="headline" class="mt-4 mb-3">Submit a Bounty!</h1>
       </li>
     </ol>
     <div class="row">
       <div class="col-lg-8 mb-4">
         <form>
           <div class="controls mb-4">
-            <label>Reference Material:<div id="reference_material_file_list"></div></label>
+            <label>Reference Material:<div id="refMatDisplayList"></div></label>
             <small id="refMatHelp" class="form-text text-muted">
               Upload files that can be used to complete the project, e.g. an STL file. This can include images of similar things, 3D models, or existing examples.
             </small>
@@ -92,7 +91,7 @@
           </div>
           <div class="control-group form-group">
             <div class="controls">
-              <input type="hidden" class="form-control" id="ReferenceMaterialNames" name="ReferenceMaterialNames" value='[]'>
+              <input type="hidden" class="form-control" id="refMatNames" name="ReferenceMaterialNames" value='[]'>
             </div>
           </div>
           <div class="control-group form-group">
