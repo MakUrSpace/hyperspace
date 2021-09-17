@@ -1,11 +1,14 @@
 from uuid import uuid4
 from urllib.parse import unquote_plus
 from base64 import b64decode
+from datetime import datetime
 
 from requests_toolbelt.multipart import MultipartDecoder
 
-from hyperspace.utilities import get_html_template, get_javascript_template, get_form_name
+from hyperspace.murd import mddb, murd
+from hyperspace.utilities import get_html_template, get_javascript_template, get_form_name, billboardPage
 from hyperspace.objects import Bounty
+from hyperspace.bounty_system.render_bounties import render_bounty
 import hyperspace.ses as ses
 
 
@@ -27,20 +30,7 @@ def get_edit_bounty_form(event):
     return 200, form_template
 
 
-def send_bounty_edit_to_benefactor(new_bounty):
-    email_template = get_html_template("bounty_suggestion_email_template.html")
-
-    for key, value in new_bounty.asdict().items():
-        email_template = email_template.replace(f"{{{key}}}", f"{value}")
-
-    bounty_edit_id = str(uuid4())
-    email_template = email_template.replace("{bounty_edit_id}", bounty_edit_id)
-    email_template = email_template.replace("{BountyReward}", new_bounty.reward)
-
-    ses.send_email(subject=f"{new_bounty.BountyName} Bounty Suggested Edits", sender="commissions@makurspace.com",
-                   contact=new_bounty.sanitized_contact, content=email_template)
-
-
+@billboardPage
 def receive_bounty_edits(event):
     bounty_id = unquote_plus(event['pathParameters']['bounty_id'])
     bounty = Bounty.get_bounty(bounty_id)
@@ -53,15 +43,72 @@ def receive_bounty_edits(event):
     for part in multipart_decoder.parts:
         form_name = get_form_name(part)
         bounty_edit[form_name] = part.content.decode()
+    editor = bounty_edit.pop("EditorContact")
 
-    bounty.BountyName = bounty_edit['BountyName']
-    # murd.update([bounty.asm()])
-    return 200, ""
+    send_edit_to_editor(bounty_edit, bounty.BountyName, editor)
+    return 200, f"Edit form submission received! Expect an email at {editor} to confirm the submission"
 
 
+def send_edit_to_editor(new_bounty, old_bounty_name, editor):
+    email_template = get_html_template("bounty_editor_email_template.html")
+
+    for key, value in new_bounty.asdict().items():
+        email_template = email_template.replace(f"{{{key}}}", f"{value}")
+    email_template = email_template.replace("{{OldBountyName}}", old_bounty_name)
+
+    bounty_edit_id = str(uuid4())
+    murd.update([
+        {mddb.group_key: "bounty_edit_submission",
+         mddb.sort_key: bounty_edit_id,
+         "BountyId": new_bounty.BountyId,
+         "CreationTime": datetime.utcnow().isoformat(),
+         "Editor": editor,
+         "EdittedBounty": new_bounty.asm()}
+    ])
+    email_template = email_template.replace("{bounty_edit_id}", bounty_edit_id)
+    email_template = email_template.replace("{BountyReward}", new_bounty.reward)
+
+    ses.send_email(subject=f"{new_bounty.BountyName} Bounty Suggested Edits", sender="commissions@makurspace.com",
+                   contact=new_bounty.sanitized_contact, content=email_template)
+
+
+@billboardPage
 def submit_bounty_edits(event):
-    return 503, "Not implemented"
+    bounty_edit_id = unquote_plus(event['pathParameters']['bounty_edit_id'])
+    edit_ticket = murd.read_first(group="bounty_edit_submission", sort=bounty_edit_id)
+    editted_bounty = Bounty.fromm(edit_ticket['EdittedBounty'])
+    send_edit_to_benefactor(editted_bounty, edit_ticket['Editor'])
+    return 200, "Bounty edits confirmed! Your suggested edits have been sent to the bounty's benefactor for review"
+
+
+def send_edit_to_benefactor(new_bounty, editor):
+    email_template = get_html_template("bounty_suggestion_email_template.html")
+
+    bounty_edit_confirmation_id = str(uuid4())
+    murd.update([
+        {mddb.group_key: "bounty_edit_confirmation",
+         mddb.sort_key: bounty_edit_confirmation_id,
+         "BountyId": new_bounty.BountyId,
+         "CreationTime": datetime.utcnow().isoformat(),
+         "Editor": editor,
+         "EdittedBounty": new_bounty.asm()}
+    ])
+
+    for key, value in new_bounty.asdict().items() | \
+            {"bounty_edit_confirmation_id": bounty_edit_confirmation_id, "BountyReward": new_bounty.reward, "editor": editor}:
+        email_template = email_template.replace(f"{{{key}}}", f"{value}")
+
+    email_template = email_template.replace("{bounty_edit_confirmation_id}", bounty_edit_confirmation_id)
+    email_template = email_template.replace("{BountyReward}", new_bounty.reward)
+    email_template = email_template
+
+    ses.send_email(subject=f"{new_bounty.BountyName} Bounty Suggested Edits", sender="commissions@makurspace.com",
+                   contact=new_bounty.sanitized_contact, content=email_template)
 
 
 def confirm_bounty_edits(event):
-    return 503, "Not implemented"
+    bounty_edit_confirmation_id = unquote_plus(event['pathParameters']['bounty_edit_confirmation_id'])
+    edit_ticket = murd.read_first(group="bounty_edit_confirmation", sort=bounty_edit_confirmation_id)
+    editted_bounty = Bounty.fromm(edit_ticket['EdittedBounty'])
+    editted_bounty.update()
+    return 200, render_bounty(editted_bounty.BountyId)

@@ -41,7 +41,7 @@ def build_page():
     page.add_endpoint(method="post", path="/rest/edit_bounty/{bounty_id}", func=receive_bounty_edits, content_type="text/html")
     page.add_endpoint(method="get", path="/rest/submit_bounty_edits_and_call/{bounty_edit_id}", func=submit_bounty_edits, content_type="text/html")
     page.add_endpoint(method="get", path="/rest/submit_bounty_edits/{bounty_edit_id}", func=submit_bounty_edits, content_type="text/html")
-    page.add_endpoint(method="get", path="/rest/confirm_bounty_edits/{bounty_edit_id}", func=confirm_bounty_edits, content_type="text/html")
+    page.add_endpoint(method="get", path="/rest/confirm_bounty_edits/{bounty_edit_confirmation_id}", func=confirm_bounty_edits, content_type="text/html")
 
     # Call Bounty
     page.add_endpoint(method="get", path="/rest/call_bounty/{bounty_id}", func=get_call_bounty_form, content_type="text/html")

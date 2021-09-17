@@ -5,13 +5,17 @@ from hyperspace.objects import Bounty
 
 
 def get_rendered_bounty(event):
+    bounty_id = unquote_plus(event['pathParameters']['bounty_id'])
+    return 200, render_bounty(bounty_id)
+
+
+def render_bounty(bounty_id):
     bounty_interactions = {
         "suggest_edit": """<button class="col btn btn-primary" id="suggest_edit_button" style="margin-bottom: 7px" onclick="location.href='/rest/edit_bounty/{bounty_id}';">Suggest Edit</button>""",
         "make_this": """<button class="col btn btn-primary" id="make_this_button" onclick="location.href='/rest/call_bounty/{bounty_id}';">I can make this!</button>""",
         "wip_this": """<button class="col btn btn-primary" id="make_this_button" onclick="location.href='/rest/bounty_wip/{bounty_id}';">I can WIP this!</button>""",
         "claim_this": """<button class="col btn btn-primary" id="make_this_button" onclick="location.href='/rest/claim_bounty/{bounty_id}';">I've finished this!</button>""",
     }
-    bounty_id = unquote_plus(event['pathParameters']['bounty_id'])
     bounty = Bounty.get_bounty(bounty_id)
 
     if bounty.State == "confirmed":
@@ -39,7 +43,7 @@ def get_rendered_bounty(event):
             "{bounty_description}": bounty.BountyDescription}.items():
         template = template.replace(pattern, replacement)
 
-    return 200, template
+    return template
 
 
 def render_bountyboard(group="confirmed", limit=200):

@@ -43,3 +43,12 @@ def sanitize_email(email_address):
 
 def timestamp():
     return datetime.utcnow().isoformat()
+
+
+def billboardPage(func):
+    billboard = get_html_template("billboard.html")
+
+    def billboarded(event):
+        statusCode, body = func(event)
+        return statusCode, billboard.replace("{{body}}", body)
+    return billboarded
