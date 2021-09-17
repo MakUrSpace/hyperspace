@@ -91,6 +91,12 @@ functions:
           path: /rest/edit_bounty/{bounty_id}
           method: post
       - http:
+          path: /rest/submit_bounty_edits/{bounty_edit_id}
+          method: get
+      - http:
+          path: /rest/confirm_bounty_edits/{bounty_edit_confirmation_id}
+          method: get
+      - http:
           path: /rest/call_bounty/{bounty_id}
           method: get
       - http:
