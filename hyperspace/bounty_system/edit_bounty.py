@@ -3,10 +3,8 @@ from urllib.parse import unquote_plus
 from base64 import b64decode
 from datetime import datetime
 
-from requests_toolbelt.multipart import MultipartDecoder
-
 from hyperspace.murd import mddb, murd
-from hyperspace.utilities import get_html_template, get_javascript_template, get_form_name, billboardPage
+from hyperspace.utilities import get_html_template, get_javascript_template, billboardPage, process_multipart_form_submission
 from hyperspace.objects import Bounty
 from hyperspace.bounty_system.render_bounties import render_bounty
 import hyperspace.ses as ses
@@ -39,14 +37,15 @@ def receive_bounty_edits(event):
     content_type = event['headers']['content-type']
     form_data = b64decode(event['body'])
 
-    multipart_decoder = MultipartDecoder(content=form_data, content_type=content_type)
-    for part in multipart_decoder.parts:
-        form_name = get_form_name(part)
-        bounty_edit[form_name] = part.content.decode()
+    bounty_edit = process_multipart_form_submission(form_data, content_type)
     editor = bounty_edit.pop("EditorContact")
+    editted_bounty = Bounty(**bounty_edit,
+                            BountyId=bounty.BountyId,
+                            Benefactor=bounty.Benefactor,
+                            Contact=bounty.Contact)
 
-    send_edit_to_editor(bounty_edit, bounty.BountyName, editor)
-    return 200, f"Edit form submission received! Expect an email at {editor} to confirm the submission"
+    send_edit_to_editor(editted_bounty, bounty.BountyName, editor)
+    return 200, f"Edit form submission received! Expect an email at <b>{editor}</b> to confirm the submission"
 
 
 def send_edit_to_editor(new_bounty, old_bounty_name, editor):
@@ -54,7 +53,7 @@ def send_edit_to_editor(new_bounty, old_bounty_name, editor):
 
     for key, value in new_bounty.asdict().items():
         email_template = email_template.replace(f"{{{key}}}", f"{value}")
-    email_template = email_template.replace("{{OldBountyName}}", old_bounty_name)
+    email_template = email_template.replace("{OldBountyName}", old_bounty_name)
 
     bounty_edit_id = str(uuid4())
     murd.update([
@@ -69,7 +68,7 @@ def send_edit_to_editor(new_bounty, old_bounty_name, editor):
     email_template = email_template.replace("{BountyReward}", new_bounty.reward)
 
     ses.send_email(subject=f"{new_bounty.BountyName} Bounty Suggested Edits", sender="commissions@makurspace.com",
-                   contact=new_bounty.sanitized_contact, content=email_template)
+                   contact=editor, content=email_template)
 
 
 @billboardPage
@@ -94,8 +93,10 @@ def send_edit_to_benefactor(new_bounty, editor):
          "EdittedBounty": new_bounty.asm()}
     ])
 
-    for key, value in new_bounty.asdict().items() | \
-            {"bounty_edit_confirmation_id": bounty_edit_confirmation_id, "BountyReward": new_bounty.reward, "editor": editor}:
+    for key, value in {
+        **new_bounty.asdict(),
+        **{"bounty_edit_confirmation_id": bounty_edit_confirmation_id, "BountyReward": new_bounty.reward, "editor": editor}
+    }.items():
         email_template = email_template.replace(f"{{{key}}}", f"{value}")
 
     email_template = email_template.replace("{bounty_edit_confirmation_id}", bounty_edit_confirmation_id)
@@ -110,5 +111,8 @@ def confirm_bounty_edits(event):
     bounty_edit_confirmation_id = unquote_plus(event['pathParameters']['bounty_edit_confirmation_id'])
     edit_ticket = murd.read_first(group="bounty_edit_confirmation", sort=bounty_edit_confirmation_id)
     editted_bounty = Bounty.fromm(edit_ticket['EdittedBounty'])
-    editted_bounty.update()
-    return 200, render_bounty(editted_bounty.BountyId)
+    editted_bounty.store()
+    
+    print(editted_bounty.asdict())
+    return 200, render_bounty(editted_bounty.BountyId).replace(
+        f">{editted_bounty.BountyName}</h1>", f">Updated! - {editted_bounty.BountyName}</h1>")

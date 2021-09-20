@@ -3,11 +3,9 @@ from uuid import uuid4
 import json
 from base64 import b64decode
 
-from requests_toolbelt.multipart import MultipartDecoder
-
 from hyperspace.murd import mddb, murd
 from hyperspace.objects import Bounty, PurchaseConfirmation
-from hyperspace.utilities import get_html_template, get_form_name
+from hyperspace.utilities import get_html_template, process_multipart_form_submission
 import hyperspace.ses as ses
 import hyperspace.s3 as s3
 
@@ -42,14 +40,7 @@ def submit_bounty_form(event):
     content_type = event['headers']['content-type']
     form_data = b64decode(event['body'])
 
-    multipart_decoder = MultipartDecoder(content=form_data, content_type=content_type)
-    for part in multipart_decoder.parts:
-        form_name = get_form_name(part)
-        assert form_name != 'State'
-        if form_name == 'ReferenceMaterialNames':
-            new_bounty_defn['ReferenceMaterial'] = json.loads(part.content)
-        else:
-            new_bounty_defn[form_name] = part.content.decode()
+    new_bounty_defn = process_multipart_form_submission(form_data, content_type)
 
     new_bounty = Bounty(**new_bounty_defn)
     try:
