@@ -107,6 +107,7 @@
       console.log(e)
       changed = [...new Set(changed)]
       document.getElementById('changed').value = JSON.stringify(changed)
+      return true
     }
 
     $(document).ready(function(){

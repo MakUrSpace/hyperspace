@@ -22,6 +22,7 @@ def render_refmat_upload_script(event):
 window.addEventListener('load', function() {
     console.log('All assets are loaded')
     document.getElementById('BountyId').value = "{bounty_id}"
+    return true
 })
 """
     return 200, script_template.replace("{bounty_id}", str(uuid4()))

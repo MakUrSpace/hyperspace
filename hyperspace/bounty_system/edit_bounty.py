@@ -2,10 +2,11 @@ from uuid import uuid4
 from urllib.parse import unquote_plus
 from base64 import b64decode
 from datetime import datetime
+import json
 
 from hyperspace.murd import mddb, murd
-from hyperspace.utilities import get_html_template, get_javascript_template, billboardPage, process_multipart_form_submission
-from hyperspace.objects import Bounty
+from hyperspace.utilities import get_html_template, get_javascript_template, billboardPage, process_multipart_form_submission, sanitize_email
+from hyperspace.objects import Bounty, Maker
 from hyperspace.bounty_system.render_bounties import render_bounty
 import hyperspace.ses as ses
 
@@ -38,15 +39,23 @@ def receive_bounty_edits(event):
     form_data = b64decode(event['body'])
 
     bounty_edit = process_multipart_form_submission(form_data, content_type)
-    editor = bounty_edit.pop("EditorContact")
+
+    try:
+        editor = Maker.retrieve(bounty_edit.pop("EditorContact")).MakerEmail
+    except sanitize_email.InvalidEmailAddress:
+        raise Exception("To suggest a Bounty edit, you must submit a valid email address")
+    except Maker.UnrecognizedMaker:
+        raise Exception('To suggest a Bounty edit, you must be a registered maker. <a href="https://www.makurspace.com/maker_registration.html">Consider registering here</a>')
+
+    changeMap = json.loads(bounty_edit.pop("changed"))
     editted_bounty = Bounty(**bounty_edit,
                             BountyId=bounty.BountyId,
                             Benefactor=bounty.Benefactor,
                             Contact=bounty.Contact)
 
-    assert "changed" in editted_bounty
-    for attr in editted_bounty['changed']:
-        bounty['changed'] = getattr(editted_bounty, attr)
+    for attr in changeMap:
+        print(f"Updating {attr}")
+        setattr(bounty, attr, getattr(editted_bounty, attr))
 
     send_edit_to_editor(bounty, bounty.BountyName, editor)
     return 200, f"Edit form submission received! Expect an email at <b>{editor}</b> to confirm the submission"
@@ -71,7 +80,7 @@ def send_edit_to_editor(new_bounty, old_bounty_name, editor):
     email_template = email_template.replace("{bounty_edit_id}", bounty_edit_id)
     email_template = email_template.replace("{BountyReward}", new_bounty.reward)
 
-    ses.send_email(subject=f"{new_bounty.BountyName} Bounty Suggested Edits", sender="commissions@makurspace.com",
+    ses.send_email(subject=f"Submit {new_bounty.BountyName} Bounty Suggested Edits?", sender="commissions@makurspace.com",
                    contact=editor, content=email_template)
 
 
@@ -107,7 +116,7 @@ def send_edit_to_benefactor(new_bounty, editor):
     email_template = email_template.replace("{BountyReward}", new_bounty.reward)
     email_template = email_template
 
-    ses.send_email(subject=f"{new_bounty.BountyName} Bounty Suggested Edits", sender="commissions@makurspace.com",
+    ses.send_email(subject=f"Accept {new_bounty.BountyName} Bounty Suggested Edits?", sender="commissions@makurspace.com",
                    contact=new_bounty.sanitized_contact, content=email_template)
 
 
