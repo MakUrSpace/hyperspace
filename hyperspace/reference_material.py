@@ -17,4 +17,11 @@ def get_refmat_surl(event):
 
 def render_refmat_upload_script(event):
     script_template = get_javascript_template("upload_reference_material.js")
+    script_template += """
+
+window.addEventListener('load', function() {
+    console.log('All assets are loaded')
+    document.getElementById('BountyId').value = "{bounty_id}"
+})
+"""
     return 200, script_template.replace("{bounty_id}", str(uuid4()))

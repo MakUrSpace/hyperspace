@@ -36,14 +36,14 @@
           <div class="control-group form-group">
             <div class="controls">
               <label>Bounty Reward:</label>
-              <input type="float" class="form-control" id="Bounty" name="Bounty" required data-validation-required-message="Please enter a bounty reward amount." value={bounty_reward}>
+              <input type="float" class="form-control change-monitored" id="Bounty" name="Bounty" required data-validation-required-message="Please enter a bounty reward amount." value={bounty_reward}>
               <p class="help-block"></p>
             </div>
           </div>
           <div class="control-group form-group">
             <div class="controls">
               <label>Bounty Name:</label>
-              <input type="text" class="form-control" id="BountyName" name="BountyName" required data-validation-required-message="Please enter a unique name for the bounty" value={bounty_name}>
+              <input type="text" class="form-control change-monitored" id="BountyName" name="BountyName" required data-validation-required-message="Please enter a unique name for the bounty" value={bounty_name}>
             </div>
           </div>
           <div class="control-group form-group">
@@ -60,7 +60,12 @@
           </div>
           <div class="control-group form-group">
             <div class="controls">
-              <input type="hidden" class="form-control" id="ReferenceMaterialNames" name="ReferenceMaterialNames" value='[]'>
+              <input type="hidden" class="form-control change-monitored" id="ReferenceMaterialNames" name="ReferenceMaterialNames" value='[]'>
+            </div>
+          </div>
+          <div class="control-group form-group">
+            <div class="controls">
+              <input type="hidden" class="form-control" id="changed" name="changed" value='[]'>
             </div>
           </div>
           <div id="success"></div>
@@ -90,6 +95,23 @@
       }).done(function(response){
         const container = document.querySelector("#navbar")
         container.innerHTML = response
+      })
+    })
+  </script>
+  <script>
+    // Update "changed" field to contain list of all altered fields
+    let changed = []
+
+    function onAttributeChange (e) {
+      changed.push(e.target.id)
+      console.log(e)
+      changed = [...new Set(changed)]
+      document.getElementById('changed').value = JSON.stringify(changed)
+    }
+
+    $(document).ready(function(){
+      [...document.getElementsByClassName("change-monitored")].forEach( (element) => {
+        element.addEventListener("change", onAttributeChange)
       })
     })
   </script>

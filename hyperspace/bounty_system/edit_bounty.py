@@ -14,8 +14,8 @@ def get_edit_bounty_form(event):
     bounty_id = unquote_plus(event['pathParameters']['bounty_id'])
     bounty = Bounty.get_bounty(bounty_id)
     form_template = get_html_template("edit_bounty_form.html")
-    script_template = get_javascript_template("upload_reference_material.js")
-    script_template.replace("{bounty_id}", bounty_id)
+    script_template = \
+        get_javascript_template("upload_reference_material.js").replace("{bounty_id}", bounty_id)
 
     for pattern, replacement in {
             "{bounty_id}": bounty.BountyId,
@@ -43,6 +43,11 @@ def receive_bounty_edits(event):
                             BountyId=bounty.BountyId,
                             Benefactor=bounty.Benefactor,
                             Contact=bounty.Contact)
+
+    merged_bounty = Bounty.fromm(bounty.asm())
+    assert "changed" in editted_bounty
+    for attr in editted_bounty['changed']:
+        merged_bounty['changed'] = getattr(editted_bounty, attr)
 
     send_edit_to_editor(editted_bounty, bounty.BountyName, editor)
     return 200, f"Edit form submission received! Expect an email at <b>{editor}</b> to confirm the submission"
@@ -112,7 +117,7 @@ def confirm_bounty_edits(event):
     edit_ticket = murd.read_first(group="bounty_edit_confirmation", sort=bounty_edit_confirmation_id)
     editted_bounty = Bounty.fromm(edit_ticket['EdittedBounty'])
     editted_bounty.store()
-    
+
     print(editted_bounty.asdict())
     return 200, render_bounty(editted_bounty.BountyId).replace(
         f">{editted_bounty.BountyName}</h1>", f">Updated! - {editted_bounty.BountyName}</h1>")
