@@ -44,12 +44,11 @@ def receive_bounty_edits(event):
                             Benefactor=bounty.Benefactor,
                             Contact=bounty.Contact)
 
-    merged_bounty = Bounty.fromm(bounty.asm())
     assert "changed" in editted_bounty
     for attr in editted_bounty['changed']:
-        merged_bounty['changed'] = getattr(editted_bounty, attr)
+        bounty['changed'] = getattr(editted_bounty, attr)
 
-    send_edit_to_editor(editted_bounty, bounty.BountyName, editor)
+    send_edit_to_editor(bounty, bounty.BountyName, editor)
     return 200, f"Edit form submission received! Expect an email at <b>{editor}</b> to confirm the submission"
 
 
