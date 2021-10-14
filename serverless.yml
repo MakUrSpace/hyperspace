@@ -37,6 +37,18 @@ package:
     - '!./**'
 
 functions:
+  hyperspace_cronitor:
+    name: hyperspace_cronitor
+    handler: hyperspace.cronitor.lambda_handler
+    memorySize: 128
+    timeout: 120
+    package:
+      patterns:
+        - 'hyperspace/**'
+    environment:
+      MakurspaceStaticAssets: ${env:MakurspaceStaticAssets} 
+    events:
+      -schedule: rate(1 day)
   hyperspace_api:
     name: hyperspace_api
     handler: hyperspace.api.lambda_handler

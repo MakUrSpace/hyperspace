@@ -13,7 +13,7 @@ SECONDS_IN_3_DAYS = 60 * 60 * 24 * 3
 
 
 def bounties_in_need_of_up(bounties=None):
-    """ Returns bounties called 3 days or more ago or that last updated their UP 3 or more days ago """
+    """ Returns bounties called 3 days or more ago or that set their UP 3 or more days ago """
     if bounties is None:
         bounties = Bounty.get_bounties(group="called")
     return [
@@ -37,6 +37,9 @@ def email_ups(bounties):
 
         ses.send_email(subject=f'MakUrSpace UP Request', sender="commissions@makurspace.com",
                        contact=bounty.sanitized_maker_email, content=up_email_template)
+
+def process_ups():
+    email_ups(bounties_in_need_of_up())
 
 
 def up_submission_form(event):
