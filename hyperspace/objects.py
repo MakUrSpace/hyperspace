@@ -25,6 +25,7 @@ class Bounty:
     SubmissionStamp: str = None
     ConfirmedStamp: str = None
     CalledStamp: str = None
+    UpStamp: str = None
     WipStamp: str = None
     ClaimedStamp: str = None
     PercentageDone: float = 0
@@ -32,6 +33,11 @@ class Bounty:
     FinalImages: list = None
 
     lazy_primary_image = None
+
+    def __post_init__(self):
+        if self.WipStamp is not None:
+            self.UpStamp = self.WipStamp
+            self.WipStamp = None
 
     @property
     def sanitized_reward(self):
@@ -153,7 +159,7 @@ class Bounty:
         murd.update([self.asm()])
 
     def get_stamp(self, state=None):
-        assert state in self.states + ["wip"]
+        assert state in self.states + ["up"]
         return getattr(self, f"{state.capitalize()}Stamp")
 
     def time_since(self, state=None):
@@ -166,11 +172,11 @@ class Bounty:
             return None
         return (datetime.utcnow() - datetime.fromisoformat(stamp_string)).total_seconds()
 
-    def wip_bounty(self, PercentageDone, WorkCompleted, ReferenceMaterial):
+    def up_bounty(self, PercentageDone, WorkCompleted, ReferenceMaterial):
         self.PercentageDone = float(PercentageDone)
         self.WorkCompleted = f"{self.WorkCompleted}\n\n{WorkCompleted}" if self.WorkCompleted is not None else WorkCompleted
         self.ReferenceMaterial = list(set(self.ReferenceMaterial + ReferenceMaterial))
-        setattr(self, f"WipStamp", timestamp())
+        setattr(self, f"UpStamp", timestamp())
         self.store()
 
     def claim_bounty(self, CompletionNotes, FinalImages):

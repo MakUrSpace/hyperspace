@@ -48,7 +48,10 @@ functions:
     environment:
       MakurspaceStaticAssets: ${env:MakurspaceStaticAssets} 
     events:
-      -schedule: rate(1 day)
+      - schedule: rate(1 day)
+        name: "hyperspace-daily-cronitor"
+        description: "Run hyperspace's periodic tasks"
+
   hyperspace_api:
     name: hyperspace_api
     handler: hyperspace.api.lambda_handler
@@ -121,10 +124,10 @@ functions:
           path: /rest/relinquish_bounty/{bounty_id}
           method: get
       - http:
-          path: /rest/bounty_wip/{bounty_id}
+          path: /rest/bounty_up/{bounty_id}
           method: get
       - http:
-          path: /rest/bounty_wip
+          path: /rest/bounty_up
           method: post
       - http:
           path: /rest/claim_bounty/{bounty_id}
