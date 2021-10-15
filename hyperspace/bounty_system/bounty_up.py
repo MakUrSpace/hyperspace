@@ -46,14 +46,7 @@ def process_ups():
 def up_submission_form(event):
     """ Build UP submission form """
     bounty_id = unquote_plus(event['pathParameters']['bounty_id'])
-    upload_refmat_js = get_javascript_template("upload_reference_material.js") + """
-
-window.addEventListener('load', function() {
-    console.log('All assets are loaded')
-    document.getElementById('BountyId').value = "{bounty_id}"
-    return true
-})
-"""
+    upload_refmat_js = get_javascript_template("upload_reference_material.js")
     upload_refmat_js = upload_refmat_js.replace("{bounty_id}", bounty_id)
     form_template = get_html_template("up_submission_template.html").replace("{upload_reference_material_js}", upload_refmat_js)
     return 200, form_template

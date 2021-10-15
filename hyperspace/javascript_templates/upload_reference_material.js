@@ -64,3 +64,9 @@ function upload_reference_material(){
     document.getElementById('refMatNames').value = JSON.stringify(file_names)
     updateList()
 }
+
+window.addEventListener('load', function() {
+    console.log('All assets are loaded')
+    document.getElementById('BountyId').value = "{bounty_id}"
+    return true
+})
