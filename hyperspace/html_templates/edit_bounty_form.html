@@ -28,7 +28,11 @@
       <div class="col-lg-8 mb-4">
         <form>
           <div class="controls">
-            <label>Add Reference Material:<div id="reference_material_file_list"></div></label>
+            <!--TODO: PUT RefMat editor here -->
+            <label>Reference Material:<div id="refMatDisplayList"></div></label>
+            <small id="refMatHelp" class="form-text text-muted">
+              Upload files that show the project's progress.
+            </small>
             <input type="file" multiple class="form-control" id="ReferenceMaterial" name="ReferenceMaterial" onchange="javascript:upload_reference_material()">
           </div>
         </form>
