@@ -102,7 +102,7 @@ class Bounty:
     @property
     def ReferenceMaterialHTML(self):
         return '<br>'.join([
-            f'<img src=https://www.makurspace.com{self.image_path(refMatName)} alt="{self.BountyName}: {refMatName}"'
+            f'<img src=https://www.makurspace.com{self.image_path(refMatName)} alt="{self.BountyName}: {refMatName}" width="200" height="200">'
             for refMatName in self.ReferenceMaterial
         ])
 
