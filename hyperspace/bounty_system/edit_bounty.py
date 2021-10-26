@@ -22,6 +22,7 @@ def get_edit_bounty_form(event):
             "{bounty_id}": bounty.BountyId,
             "{bounty_name}": bounty.BountyName,
             "{bounty_reward}": bounty.reward,
+            "{reference_material}": json.dumps(bounty.ReferenceMaterial),
             "{bounty_description}": bounty.BountyDescription,
             "{upload_reference_material_script}": script_template}.items():
         form_template = form_template.replace(pattern, replacement)

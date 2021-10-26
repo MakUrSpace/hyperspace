@@ -39,6 +39,9 @@ class Bounty:
             self.UpStamp = self.WipStamp
             self.WipStamp = None
 
+        if self.SubmissionStamp is None:
+            self.SubmissionStamp = timestamp()
+
     @property
     def sanitized_reward(self):
         sanitized_reward = self.Bounty
@@ -99,7 +102,7 @@ class Bounty:
     @property
     def ReferenceMaterialHTML(self):
         return '<br>'.join([
-            f'<img src={self.image_path(refMatName)} alt="{self.BountyName}: {refMatName}"'
+            f'<img src=https://www.makurspace.com{self.image_path(refMatName)} alt="{self.BountyName}: {refMatName}"'
             for refMatName in self.ReferenceMaterial
         ])
 
@@ -136,10 +139,6 @@ class Bounty:
 
     def __repr__(self):
         return json.dumps(asdict(self), indent=4)
-
-    def __post_init__(self):
-        if self.SubmissionStamp is None:
-            self.SubmissionStamp = timestamp()
 
     def asdict(self):
         return asdict(self)

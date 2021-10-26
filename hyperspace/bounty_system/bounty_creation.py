@@ -15,10 +15,7 @@ def send_bounty_to_contact(new_bounty):
     email_template = get_html_template("bounty_creation_email_template.html")
 
     new_bounty_map = new_bounty.asdict()
-    new_bounty_map['ReferenceMaterial'] = '<br>'.join([
-        f'<img src=/bountyboard/{new_bounty.BountyId}/{refMatName} alt="{refMatName}"'
-        for refMatName in new_bounty['ReferenceMaterial']
-    ])
+    new_bounty_map['ReferenceMaterial'] = new_bounty.ReferenceMaterialHTML
 
     for key, value in new_bounty_map.items():
         email_template = email_template.replace(f"{{{key}}}", f"{value}")
