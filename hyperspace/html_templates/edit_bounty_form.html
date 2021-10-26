@@ -33,7 +33,7 @@
             <small id="refMatHelp" class="form-text text-muted">
               Upload files that show the project's progress.
             </small>
-            <input type="file" multiple class="form-control" id="ReferenceMaterial" name="ReferenceMaterial" onchange="javascript:upload_reference_material()">
+            <input type="file" multiple class="form-control change-monitored" id="ReferenceMaterial" name="ReferenceMaterial" onchange="javascript:upload_reference_material()">
           </div>
         </form>
         <form name="sentMessage" id="bounty_form" novalidate enctype="multipart/form-data" method="post" action="/rest/edit_bounty/{bounty_id}">
