@@ -4,16 +4,23 @@ import json
 from base64 import b64decode
 
 from hyperspace.murd import mddb, murd
-from hyperspace.objects import Bounty, PurchaseConfirmation
+from hyperspace.objects import Bounty
 from hyperspace.utilities import get_html_template, process_multipart_form_submission
 import hyperspace.ses as ses
 import hyperspace.s3 as s3
+from hyperspace.bounty_system.render_bounties import render_bounty
 
 
 def send_bounty_to_contact(new_bounty):
     email_template = get_html_template("bounty_creation_email_template.html")
 
-    for key, value in new_bounty.asdict().items():
+    new_bounty_map = new_bounty.asdict()
+    new_bounty_map['ReferenceMaterial'] = '<br>'.join([
+        f'<img src=/bountyboard/{new_bounty.BountyId}/{refMatName} alt="{refMatName}"'
+        for refMatName in new_bounty['ReferenceMaterial']
+    ])
+
+    for key, value in new_bounty_map.items():
         email_template = email_template.replace(f"{{{key}}}", f"{value}")
 
     confirmation_id = str(uuid4())
@@ -76,19 +83,9 @@ def get_bounty_by_confirmation(confirmation_id):
 def confirm_bounty_creation(event):
     confirmation_id = event['pathParameters']['bounty_confirmation_id']
     bounty = get_bounty_by_confirmation(confirmation_id)
-    if bounty.Benefactor.lower() in ['musingsole', 'mus', 'btrain', 'shaquille', 'briana']:
-        bounty.set_state("confirmed")
-        bounty_form = get_html_template("bounty_submission_form.html")
-        bounty_form = bounty_form.replace("Submit a Bounty!", "Bounty Submitted!!! Another?")
-        return 200, bounty_form
-    confirmation_template = get_html_template("confirm_bounty.html")
-    confirmation_template = confirmation_template.replace("{bounty_confirmation_id}", confirmation_id)
-    return 200, confirmation_template
-
-
-def bounty_confirmed(event):
-    confirmation_id = event['pathParameters']['bounty_confirmation_id']
-    bounty = get_bounty_by_confirmation(confirmation_id)
-    purchase_confirmation = PurchaseConfirmation(**json.loads(event['body']))
-    purchase_confirmation.store()
     bounty.change_state("confirmed", from_state="submitted")
+
+    bounty_template = render_bounty(bounty.BountyId).replace(
+        '<ol class="breadcrumb">',
+        '<h1 class="mt-4 mb-3">Bounty Posted!!!</h1><ol class="breadcrumb">')
+    return 200, bounty_template

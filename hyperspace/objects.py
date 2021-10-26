@@ -92,6 +92,17 @@ class Bounty:
     def image_path(self, image):
         return f"/bountyboard/{self.BountyId}/{image}"
 
+    @property
+    def ReferenceMaterialPaths(self):
+        return [self.image_path(refMat) for refMat in self.ReferenceMaterial]
+
+    @property
+    def ReferenceMaterialHTML(self):
+        return '<br>'.join([
+            f'<img src={self.image_path(refMatName)} alt="{self.BountyName}: {refMatName}"'
+            for refMatName in self.ReferenceMaterial
+        ])
+
     @staticmethod
     def bounty_exists(bounty, all_states=False):
         check_states = [bounty.State] if not all_states else Bounty.states[::-1]
