@@ -35,12 +35,15 @@ def email_ups(bounties):
         }.items():
             up_email_template = up_email_template.replace(pattern, replacement)
 
+        print(f"Emailing {bounty.sanitized_maker_email} about {bounty.BountyName}")
         ses.send_email(subject=f'MakUrSpace UP Request', sender="commissions@makurspace.com",
                        contact=bounty.sanitized_maker_email, content=up_email_template)
 
 
 def process_ups():
-    email_ups(bounties_in_need_of_up())
+    bounties = bounties_in_need_of_up()
+    print(f"Bounties in need of UP: {bounties}")
+    email_ups(bounties)
 
 
 def up_submission_form(event):
