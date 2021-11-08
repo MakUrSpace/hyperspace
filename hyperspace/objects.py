@@ -173,6 +173,7 @@ class Bounty:
         return getattr(self, f"{state.capitalize()}Stamp")
 
     def time_since(self, state=None):
+        """Return the time since a state's stamp in seconds"""
         if state is None:
             for state in self.states:
                 if self.get_stamp(state) is not None:

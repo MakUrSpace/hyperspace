@@ -18,9 +18,8 @@ def bounties_in_need_of_up(bounties=None):
         bounties = Bounty.get_bounties(group="called")
     return [
         bounty for bounty in bounties
-        if bounty.time_since("called") > SECONDS_IN_3_DAYS or (
-            bounty.get_stamp("up") is not None and bounty.time_since("up") > SECONDS_IN_3_DAYS
-        )
+        if (bounty.get_stamp("up") is None and bounty.time_since("called") > SECONDS_IN_3_DAYS)
+        or (bounty.get_stamp("up") is not None and bounty.time_since("up") > SECONDS_IN_3_DAYS)
     ]
 
 
