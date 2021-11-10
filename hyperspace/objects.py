@@ -259,3 +259,42 @@ class Maker:
     @classmethod
     def get_makers(cls, limit=200):
         return [cls.fromm(b) for b in murd.read(group="makers", limit=limit)]
+
+
+@dataclass
+class Question:
+    QuestionId: str
+    BountyId: str
+    QuestionTitle: str
+    QuestionText: str
+    Questioner: bool
+
+    groupName = "question"
+
+    @classmethod
+    def fromm(cls, m):
+        return cls(QuestionId=m['QuestionId'], BountyId=m['BountyId'], QuestionTitle=m['QuestionTitle'], QuestionText=m['QuestionText'], Questioner=m['Questioner'])
+
+    @property
+    def sanitized_questioner(self):
+        return sanitize_email(self.MakerEmail)
+
+    def asm(self):
+        return {mddb.group_key: self.groupName, mddb.sort_key: self.QuestionId, **asdict(self)}
+
+    def store(self):
+        murd.update([self.asm()])
+
+    class UnrecognizedQuestion(Exception):
+        """ Exception for failing to recover a Question definition """
+
+    @classmethod
+    def retrieve(cls, question_id):
+        try:
+            return cls.fromm(murd.read_first(group=cls.groupName, sort=question_id))
+        except:
+            raise cls.UnrecognizedQuestion(f"Unable to locate Question {question_id}")
+
+    @classmethod
+    def get(cls, limit=200):
+        return [cls.fromm(b) for b in murd.read(group=cls.groupName, limit=limit)]
