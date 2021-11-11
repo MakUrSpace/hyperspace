@@ -255,7 +255,7 @@ class Maker:
         maker_email = sanitize_email(maker_email)
         try:
             return cls.fromm(murd.read_first(group="makers", sort=maker_email))
-        except:
+        except Exception:
             raise cls.UnrecognizedMaker(f"Unable to locate Maker {maker_email}")
 
     @classmethod
@@ -295,7 +295,7 @@ class Question:
     def retrieve(cls, question_id):
         try:
             return cls.fromm(murd.read_first(group=cls.groupName, sort=question_id))
-        except:
+        except Exception:
             raise cls.UnrecognizedQuestion(f"Unable to locate Question {question_id}")
 
     @classmethod
