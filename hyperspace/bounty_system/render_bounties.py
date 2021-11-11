@@ -11,7 +11,7 @@ def get_rendered_bounty(event):
 
 def render_bounty(bounty_id):
     bounty_interactions = {
-        "suggest_edit": """<button class="col btn btn-primary" id="suggest_edit_button" style="margin-bottom: 7px" onclick="location.href='/rest/edit_bounty/{bounty_id}';">Suggest Edit</button>""",
+        "suggest_edit": """<button class="col btn btn-primary" id="suggest_edit_button" onclick="location.href='/rest/edit_bounty/{bounty_id}';">Suggest Edit</button>""",
         "make_this": """<button class="col btn btn-primary" id="make_this_button" onclick="location.href='/rest/call_bounty/{bounty_id}';">I can make this!</button>""",
         "up_this": """<button class="col btn btn-primary" id="up_this_button" onclick="location.href='/rest/bounty_up/{bounty_id}';">I can UP this!</button>""",
         "claim_this": """<button class="col btn btn-primary" id="claim_this_butotn" onclick="location.href='/rest/claim_bounty/{bounty_id}';">I've finished this!</button>""",

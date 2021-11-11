@@ -5,7 +5,7 @@ from hyperspace.LambdaPage import LambdaPage
 from hyperspace.bounty_system.get_bounty import handle_get_bountyboard, handle_get_bounty
 from hyperspace.bounty_system.render_bounties import rendered_bountyboard, rendered_bounties_in_progress, rendered_bounty_portfolio, get_rendered_bounty
 from hyperspace.bounty_system.bounty_creation import submit_bounty_or_return_form, confirm_bounty_creation
-from hyperspace.bounty_system.discuss_bounty import get_ask_benefactor_form, submit_benefactor_question, get_question_form, submit_benefactor_answer
+from hyperspace.bounty_system.discuss_bounty import get_ask_benefactor_form, submit_benefactor_question, get_question_answer_form, submit_benefactor_answer
 from hyperspace.bounty_system.edit_bounty import get_edit_bounty_form, receive_bounty_edits, submit_bounty_edits, confirm_bounty_edits
 from hyperspace.bounty_system.call_bounty import get_call_bounty_form, receive_call_bounty, confirm_call_bounty
 from hyperspace.bounty_system.bounty_up import up_submission_form, handle_up_submission
@@ -39,7 +39,7 @@ def build_page():
     # Ask the Benefactor
     page.add_endpoint(method="get", path="/rest/ask_benefactor/{bounty_id}", func=get_ask_benefactor_form, content_type="text/html")
     page.add_endpoint(method="post", path="/rest/ask_benefactor/{bounty_id}", func=submit_benefactor_question, content_type="text/html")
-    page.add_endpoint(method="get", path="/rest/question/{question_id}", func=get_question_form, content_type="text/html")
+    page.add_endpoint(method="get", path="/rest/question/{question_id}", func=get_question_answer_form, content_type="text/html")
     page.add_endpoint(method="post", path="/rest/question/{question_id}", func=submit_benefactor_answer, content_type="text/html")
 
     # Edit Bounty

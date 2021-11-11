@@ -120,7 +120,9 @@ class Bounty:
                 return cls.fromm(murd.read(group=state, sort=bounty_id)[0])
             except Exception:
                 pass
-        raise Exception(f"{bounty_id} not found")
+        print("AWASDFASDF")
+        print(bounty_id)
+        raise Exception(f'{bounty_id} not found')
 
     @classmethod
     def get_bounties(cls, group="confirmed", limit=200):
@@ -268,12 +270,13 @@ class Question:
     QuestionTitle: str
     QuestionText: str
     Questioner: bool
+    Answer: str
 
     groupName = "question"
 
     @classmethod
     def fromm(cls, m):
-        return cls(QuestionId=m['QuestionId'], BountyId=m['BountyId'], QuestionTitle=m['QuestionTitle'], QuestionText=m['QuestionText'], Questioner=m['Questioner'])
+        return cls(QuestionId=m['QuestionId'], BountyId=m['BountyId'], QuestionTitle=m['QuestionTitle'], QuestionText=m['QuestionText'], Questioner=m['Questioner'], Answer=m['Answer'])
 
     @property
     def sanitized_questioner(self):
