@@ -36,6 +36,7 @@ def render_bounty(bounty_id):
 
     for pattern, replacement in {
             "{interactions}": interactions,
+            "{bounty_state}": bounty.State.upper(),
             "{bounty_name}": bounty.BountyName,
             "{bounty_id}": bounty.BountyId,
             "{bounty_reward}": bounty.reward,

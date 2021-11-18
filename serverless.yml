@@ -49,8 +49,6 @@ functions:
       MakurspaceStaticAssets: ${env:MakurspaceStaticAssets} 
     events:
       - schedule: rate(1 day)
-        name: "hyperspace-daily-cronitor"
-        description: "Run hyperspace's periodic tasks"
 
   hyperspace_api:
     name: hyperspace_api
