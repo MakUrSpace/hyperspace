@@ -1,15 +1,15 @@
 import justpy as jp
 
-class MUS_Navbar():
+class MUS_Navbar(jp.Div):
 
-    def navbar():
+    def navbar(self, request):
         wp = jp.WebPage()
         navbar_html = jp.parse_html("""
-        <head>
-            <title>MUS Test</title>
-        </head>
             <div>
-            <p>Test</p>
+                <div>
+                    MakUrSpace
+                </div>
+                <input type="search" placeholder="Search Here!">
             </div>
             """, a=wp)
         for i in navbar_html.commands:
@@ -18,4 +18,4 @@ class MUS_Navbar():
         print()
         return wp
 
-jp.justpy(MUS_Navbar)
+jp.justpy(MUS_Navbar().navbar)
