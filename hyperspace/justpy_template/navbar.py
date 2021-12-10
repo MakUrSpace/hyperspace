@@ -9,12 +9,20 @@ class MUS_Navbar(jp.Div):
                 <div>
                     MakUrSpace
                 </div>
-                <input type="search" placeholder="Search Here!">
+                <div>
+                    <input type="search" placeholder="Search Bounties">
+                </div>
+                <div>
+                    <p>Home</p>
+                </div>
+                <div>
+                    <p>Bounty Board</p>
+                </div>
+                <div>
+                    <p>Sign up / Login</p>
+                </div>
             </div>
             """, a=wp)
-        for i in navbar_html.commands:
-            print(i)
-            jp.Div(text=i, classes='font-mono ml-2', a=wp)
         print()
         return wp
 
