@@ -23,7 +23,7 @@ class MUS_Navbar(jp.Div):
                 </div>
             </div>
             """, a=wp)
-        print()
+        #print()
         return wp
 
 jp.justpy(MUS_Navbar().navbar)
