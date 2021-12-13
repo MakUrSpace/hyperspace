@@ -6,21 +6,13 @@ class MUS_Navbar(jp.Div):
         wp = jp.WebPage()
         navbar_html = jp.parse_html("""
             <div>
-                <div>
-                    MakUrSpace
-                </div>
-                <div>
-                    <input type="search" placeholder="Search Bounties">
-                </div>
-                <div>
-                    <p>Home</p>
-                </div>
-                <div>
-                    <p>Bounty Board</p>
-                </div>
-                <div>
-                    <p>Sign up / Login</p>
-                </div>
+                <ul>
+                    <li>MakUrSpace</li>
+                    <li><input type="search" placeholder="Search Bounties"></li>
+                    <li>Home</li>
+                    <li>Bounty Board</li>
+                    <li>Sign up / Login</li>
+                </ul>
             </div>
             """, a=wp)
         #print()
