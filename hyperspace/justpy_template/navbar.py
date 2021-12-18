@@ -41,7 +41,7 @@ class MUS_Navbar(jp.Div):
                         <i class="fas fa-search"></i>
                     </span>
                     </div>
-                    <input type="text" class="px-2 py-1 h-8 border border-solid  border-gray-600 text-sm leading-snug text-gray-700 bg-gray-100 shadow-none outline-none focus:outline-none w-full font-normal rounded-l-none flex-1 border-l-0 placeholder-pink-300" placeholder="Search pink" />
+                    <input type="text" class="px-2 py-1 h-8 border border-solid  border-gray-600 text-sm leading-snug text-gray-700 bg-gray-100 shadow-none outline-none focus:outline-none w-full font-normal rounded-l-none flex-1 border-l-0 placeholder-pink-300" placeholder="Search Bounties" />
                 </div>
                 </div>
             </div>
