@@ -146,20 +146,25 @@ class HyperBounty(
             state = self.State.upper()
         return state
 
+    def get_reference_material(self, formats=None, limit=None):
+        material = []
+        file_list = self.ReferenceMaterial
+        random.shuffle(file_list)
+        for filename in file_list:
+            filetype = self.get_filetype(filename)
+            if formats is filetype in formats:
+                material.append(filename)
+                if limit and len(material) > limit:
+                    return material
+        return material
+
+    @property
+    def stls(self):
+        return self.get_reference_material(formats=["stl"])
+
     @property
     def primary_image(self):
-        if self.lazy_primary_image is not None:
-            return self.lazy_primary_image
-        else:
-            formats = ["jpg", "jpeg", "png"]
-            file_list = self.FinalImages if self.FinalImages is not None else self.ReferenceMaterial
-            random.shuffle(file_list)
-            for filename in file_list:
-                filetype = self.get_filetype(filename)
-                if filetype in formats:
-                    self.lazy_primary_image = filename
-                    return self.lazy_primary_image
-            return None
+        return self.get_reference_material(formats=["jpg", "jpeg", "png"])
 
     @property
     def secondary_images(self):
@@ -286,8 +291,6 @@ class Bounty:
     WorkCompleted: str = ""
     FinalImages: list = None
 
-    lazy_primary_image = None
-
     def __post_init__(self):
         if self.WipStamp is not None:
             self.UpStamp = self.WipStamp
@@ -332,29 +335,30 @@ class Bounty:
             state = self.State.upper()
         return state
 
+    def get_reference_material(self, formats=None, limit=None):
+        material = []
+        file_list = self.ReferenceMaterial
+        random.shuffle(file_list)
+        for filename in file_list:
+            filetype = self.get_filetype(filename)
+            if formats is not None and filetype in formats:
+                material.append(filename)
+                if limit and len(material) > limit:
+                    return material
+        return material
+
+    @property
+    def stls(self):
+        return self.get_reference_material(formats=["stl"])
+
     @property
     def primary_image(self):
-        if self.lazy_primary_image is not None:
-            return self.lazy_primary_image
-        else:
-            formats = ["jpg", "jpeg", "png"]
-            file_list = self.FinalImages if self.FinalImages is not None else self.ReferenceMaterial
-            random.shuffle(file_list)
-            for filename in file_list:
-                filetype = self.get_filetype(filename)
-                if filetype in formats:
-                    self.lazy_primary_image = filename
-                    return self.lazy_primary_image
-            return None
+        images = self.get_reference_material(formats=["jpg", "jpeg", "png"])
+        return images[0] if images else "None Found"
 
     @property
     def secondary_images(self):
-        formats = ["jpg", "jpeg", "png"]
-        file_list = self.FinalImages if self.FinalImages is not None else self.ReferenceMaterial
-        file_list = [file
-                     for file in file_list
-                     if self.get_filetype(file) in formats and file != self.primary_image]
-        return file_list
+        return self.get_reference_material(formats=["jpg", "jpeg", "png"])
 
     def image_path(self, image):
         return f"/bountyboard/{self.BountyId}/{image}"

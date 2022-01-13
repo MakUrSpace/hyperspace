@@ -1,4 +1,5 @@
 from urllib.parse import unquote_plus
+import re
 
 from hyperspace.utilities import get_html_template
 from hyperspace.objects import Bounty
@@ -27,12 +28,20 @@ def render_bounty(bounty_id):
         interactions = []
     interactions = "\n".join([bounty_interactions[i] for i in interactions])
 
-    template = get_html_template("bountycard.html")
+    template = get_html_template("bountycard_stl.html" if bounty.stls is not None else "bountyboard.html")
 
     secondary_images = []
     sec_img_template = """<div class="col-sm"><img class="d-block w-100" src="{src_url}" alt="{alt_text}"></div>"""
     for sec_img in bounty.secondary_images:
         secondary_images.append(sec_img_template.format(src_url=bounty.image_path(sec_img), alt_text=""))
+    
+    primary_stl = bounty.stls[0] if bounty.stls else ''
+    primary_stl_ip = bounty.image_path(primary_stl)
+    position_search = re.search("_stlposition_(.*)x(.*)x(.*).stl", primary_stl)
+    stl_position = "0 0 0" if position_search is None else " ".join([str(int(float(pos))) for pos in position_search.groups()])
+    print("ABABSADFASDFASDF")
+    print(primary_stl)
+    print(stl_position)
 
     for pattern, replacement in {
             "{interactions}": interactions,
@@ -40,7 +49,9 @@ def render_bounty(bounty_id):
             "{bounty_name}": bounty.BountyName,
             "{bounty_id}": bounty.BountyId,
             "{bounty_reward}": bounty.reward,
-            "{primary_image}": bounty.image_path(bounty.primary_image),
+            "{primary_image}": bounty.primary_image,
+            "{primary_stl}": primary_stl_ip,
+            "{model_position}": stl_position,
             "{secondary_images}": "\n".join(secondary_images),
             "{bounty_description}": bounty.BountyDescription}.items():
         template = template.replace(pattern, replacement)
