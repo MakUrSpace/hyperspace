@@ -21,7 +21,7 @@ class MUS_Bounty_Board(jp.Div):
                               </div>
                         </div>
                         <div class="p-4">
-                              <p class="uppercase tracking-wide text-sm font-bold text-gray-700">Detached house • 5y old</p>
+                              <p class="uppercase tracking-wide text-sm font-bold text-gray-700">Testing Spot</p>
                               <p class="text-3xl text-gray-900">$750,000</p>
                               <p class="text-gray-700">742 Evergreen Terrace</p>
                         </div>
@@ -42,11 +42,11 @@ class MUS_Bounty_Board(jp.Div):
                         <div class="px-4 pt-3 pb-4 border-t border-gray-300 bg-gray-100">
                               <div class="text-xs uppercase font-bold text-gray-600 tracking-wide">Realtor</div>
                               <div class="flex items-center pt-2">
-                                 <div class="bg-cover bg-center w-10 h-10 rounded-full mr-3" style="background-image: url(https://via.placeholder.com/50x50)">
+                                 <div>
+                                    <button class="p-2 pl-5 pr-5 bg-transparent border-2 border-blue-500 text-blue-500 text-lg rounded-lg hover:bg-blue-500 hover:text-gray-100 focus:border-4 focus:border-blue-300">Primary</button>
                                  </div>
                                  <div>
-                                    <p class="font-bold text-gray-900">Catherine Heffner</p>
-                                    <p class="text-sm text-gray-700">(111) 111-1111</p>
+                                    <button class="p-2 pl-5 pr-5 bg-transparent border-2 border-blue-500 text-blue-500 text-lg rounded-lg hover:bg-blue-500 hover:text-gray-100 focus:border-4 focus:border-blue-300">Primary</button>
                                  </div>
                               </div>
                         </div>
