@@ -5,13 +5,11 @@ class MUS_Bounty_Board(jp.Div):
     def bounty_board(self, request):
         wp = jp.WebPage()
         bounty_board_html = jp.parse_html("""
-<!-- component -->
-
-
-<!-- ====== Blog Section Start -->
+<!--Bounty_Board_Section-->
 <section class="pt-20 lg:pt-[120px] pb-10 lg:pb-20">
    <div class="container">
       <div class="flex flex-wrap -mx-4">
+      <!--Start of first div bounty content-->
          <div class="w-full md:w-1/2 lg:w-1/3 px-4">
             <div class="max-w-[370px] mx-auto mb-10">
                <div class="rounded overflow-hidden mb-8">
@@ -64,6 +62,8 @@ class MUS_Bounty_Board(jp.Div):
                </div>
             </div>
          </div>
+         <!--End of first div content-->
+
          <div class="w-full md:w-1/2 lg:w-1/3 px-4">
             <div class="max-w-[370px] mx-auto mb-10">
                <div class="rounded overflow-hidden mb-8">
@@ -171,7 +171,6 @@ class MUS_Bounty_Board(jp.Div):
       </div>
    </div>
 </section>
-<!-- ====== Blog Section End -->
             """, a=wp)
         return wp
 
