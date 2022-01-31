@@ -8,18 +8,27 @@ from hyperspace.murd import mddb, murd
 
 
 def BuildStamp(stampName):
-    return make_dataclass(
-        stampName,
-        fields=[(f"{stampName.capitalize()}Stamp", str)],
-        namespace={
-            f"stamp{stampName.upper()}": lambda self: setattr(self, f"{stampName}Stamp", timestamp()),
-            f"timeSince{stampName.upper()}":
-                lambda self:
-                    None
-                    if not (stamp := getattr(self, f"{stampName}Stamp")) else
-                    (datetime.utcnow() - datetime.fromisoformat(stamp).total_seconds())
-        }
-    )
+    def dataClassBuilder(dataClass):
+        stampDataClass = make_dataclass(
+            stampName,
+            fields=[(f"{stampName.capitalize()}Stamp", str, "")],
+            namespace={
+                f"stamp{stampName.upper()}": lambda self: setattr(self, f"{stampName}Stamp", timestamp()),
+                f"timeSince{stampName.upper()}":
+                    lambda self:
+                        None
+                        if not (stamp := getattr(self, f"{stampName}Stamp")) else
+                        (datetime.utcnow() - datetime.fromisoformat(stamp).total_seconds())
+            }
+        )
+
+        @dataclass
+        class stampedDataClass(stampDataClass, dataClass):
+            f"""This class mixes {dataClass.__name__} and {stampDataClass.__name__}"""
+
+        return stampedDataClass
+
+    return dataClassBuilder
 
 
 def BuildInteraction(actionName):
@@ -64,17 +73,20 @@ class HyperObject:
         return [cls.fromm(m) for m in murd.read(group=cls.groupName, sort=id, min_sort=min_sort, max_sort=max_sort, limit=limit, ascending_order=ascending_order)]
 
 
-hyperBountyStamps = ["Submission", "Confirmed", "Called", "Claimed", "Up", "submitted", "confirmed", "called", "claimed"]
-
-
+@BuildStamp("Submitted")
+@BuildStamp("Confirmed")
+@BuildStamp("Called")
+@BuildStamp("Up")
+@BuildStamp("Claimed")
 @dataclass
 class HyperBounty(
     HyperObject,
-    *[BuildStamp(sn) for sn in hyperBountyStamps]
+    # *[BuildStamp(sn) for sn in hyperBountyStamps]
 ):
     groupName = "bounty"
-    State: str
     legal_states = ["submitted", "confirmed", "called", "claimed"]
+
+    State: str
     Award: str
     Name: str
     Benefactor: str
@@ -143,7 +155,7 @@ class HyperBounty(
         random.shuffle(file_list)
         for filename in file_list:
             filetype = self.get_filetype(filename)
-            if formats is filetype in formats:
+            if filetype in formats:
                 material.append(filename)
                 if limit and len(material) > limit:
                     return material
@@ -155,7 +167,10 @@ class HyperBounty(
 
     @property
     def primary_image(self):
-        return self.get_reference_material(formats=["jpg", "jpeg", "png"])
+        try:
+            return self.get_reference_material(formats=["jpg", "jpeg", "png"])[0]
+        except IndexError:
+            return ""
 
     @property
     def secondary_images(self):
@@ -163,7 +178,7 @@ class HyperBounty(
         file_list = self.FinalImages if self.FinalImages is not None else self.ReferenceMaterial
         file_list = [file
                      for file in file_list
-                     if self.get_filetype(file) in formats and file != self.primary_image]
+                     if self.get_filetype(file) in formats]
         return file_list
 
     def image_path(self, image):
@@ -176,7 +191,7 @@ class HyperBounty(
     @property
     def ReferenceMaterialHTML(self):
         return '<br>'.join([
-            f'<img src=https://www.makurspace.com{self.image_path(refMatName)} alt="{self.BountyName}: {refMatName}" width="200" height="200">'
+            f'<img src=https://www.makurspace.com{self.image_path(refMatName)} alt="{self.Name}: {refMatName}" width="200" height="200">'
             for refMatName in self.ReferenceMaterial
         ])
 
@@ -185,7 +200,7 @@ class HyperBounty(
         if target_state != self.State:
             self.State = target_state
             getattr(self, f"stamp{target_state.upper()}")()
-            self.store()
+            self.set()
 
     def change_state(self, target_state, from_state=None):
         if from_state is not None:
@@ -198,7 +213,7 @@ class HyperBounty(
         self.WorkCompleted = f"{self.WorkCompleted}\n\n{WorkCompleted}" if self.WorkCompleted is not None else WorkCompleted
         self.ReferenceMaterial = list(set(self.ReferenceMaterial + ReferenceMaterial))
         self.stampUP()
-        self.store()
+        self.set()
 
     def claim_bounty(self, CompletionNotes, FinalImages):
         self.FinalImages = FinalImages
@@ -206,21 +221,8 @@ class HyperBounty(
         self.change_state("claimed")
 
 
-def oldBtoNew(o):
-    changed_keys = {
-        "Id": "BountyId",
-        "Name": "BountyName",
-        "Award": "Bounty",
-        "Description": "BountyDescription"
-    }
-    return {
-        **{k: o[v] for k, v in changed_keys.items()},
-        **{k: v for k, v in o.items() if k not in changed_keys.values()}
-    }
-
-
 @dataclass
-class HyperQuestion(HyperObject, BuildStamp("Asked"), BuildStamp("Answered")):
+class HyperQuestion(HyperObject):  # , BuildStamp("Asked"), BuildStamp("Answered")):
     groupName = "question"
     BountyId: str
     QuestionTitle: str

@@ -8,17 +8,6 @@ provider:
   region: us-east-1
 
 
-resources:
-  Resources:
-    MakUrSpaceStaticAssets:
-      Type: AWS::S3::Bucket
-      Properties:
-        BucketName: ${env:MakurspaceStaticAssets}
-        AccessControl: PublicRead
-        WebsiteConfiguration:
-          IndexDocument: index.html
-          ErrorDocument: error.html
-
 
 custom:
   s3Sync:

@@ -6,24 +6,24 @@ import json
 
 from hyperspace.murd import mddb, murd
 from hyperspace.utilities import get_html_template, get_javascript_template, billboardPage, process_multipart_form_submission, sanitize_email
-from hyperspace.objects import HyperBounty, HyperMaker
+from hyperspace.objects import HyperBounty, HyperMaker, asdict
 from hyperspace.bounty_system.render_bounties import render_bounty
 import hyperspace.ses as ses
 
 
 def get_edit_bounty_form(event):
     bounty_id = unquote_plus(event['pathParameters']['bounty_id'])
-    bounty = HyperBounty.retriev(bounty_id)
+    bounty = HyperBounty.retrieve(bounty_id)
     form_template = get_html_template("edit_bounty_form.html")
     script_template = \
         get_javascript_template("upload_reference_material.js").replace("{bounty_id}", bounty_id)
 
     for pattern, replacement in {
-            "{bounty_id}": bounty.BountyId,
-            "{bounty_name}": bounty.BountyName,
+            "{bounty_id}": bounty.Id,
+            "{bounty_name}": bounty.Name,
             "{bounty_reward}": bounty.reward,
             "{reference_material}": json.dumps(bounty.ReferenceMaterial),
-            "{bounty_description}": bounty.BountyDescription,
+            "{bounty_description}": bounty.Description,
             "{upload_reference_material_script}": script_template}.items():
         form_template = form_template.replace(pattern, replacement)
 
@@ -49,22 +49,23 @@ def receive_bounty_edits(event):
         raise Exception('To suggest a Bounty edit, you must be a registered maker. <a href="https://www.makurspace.com/maker_registration.html">Consider registering here</a>')
 
     changeMap = json.loads(bounty_edit.pop("changed"))
-    editted_bounty = HyperBounty(**bounty_edit, Id=bounty.Id,
-                                 Benefactor=bounty.Benefactor,
-                                 Contact=bounty.Contact)
+    editted_bounty = HyperBounty(**{**asdict(bounty), **bounty_edit,
+                                    "Id": bounty.Id,
+                                    "Benefactor": bounty.Benefactor,
+                                    "Contact": bounty.Contact})
 
     for attr in changeMap:
         print(f"Updating {attr}")
         setattr(bounty, attr, getattr(editted_bounty, attr))
 
-    send_edit_to_editor(bounty, bounty.BountyName, editor)
+    send_edit_to_editor(bounty, bounty.Name, editor)
     return 200, f"Edit form submission received! Expect an email at <b>{editor}</b> to confirm the submission"
 
 
 def send_edit_to_editor(new_bounty, old_bounty_name, editor):
     email_template = get_html_template("bounty_editor_email_template.html")
 
-    new_bounty_map = new_bounty.asdict()
+    new_bounty_map = asdict(new_bounty)
     new_bounty_map['ReferenceMaterial'] = new_bounty.ReferenceMaterialHTML
 
     for key, value in new_bounty_map.items():
@@ -75,7 +76,7 @@ def send_edit_to_editor(new_bounty, old_bounty_name, editor):
     murd.update([
         {mddb.group_key: "bounty_edit_submission",
          mddb.sort_key: bounty_edit_id,
-         "BountyId": new_bounty.BountyId,
+         "BountyId": new_bounty.Id,
          "CreationTime": datetime.utcnow().isoformat(),
          "Editor": editor,
          "EdittedBounty": new_bounty.asm()}
@@ -83,7 +84,7 @@ def send_edit_to_editor(new_bounty, old_bounty_name, editor):
     email_template = email_template.replace("{bounty_edit_id}", bounty_edit_id)
     email_template = email_template.replace("{BountyReward}", new_bounty.reward)
 
-    ses.send_email(subject=f"Submit {new_bounty.BountyName} Bounty Suggested Edits?", sender="commissions@makurspace.com",
+    ses.send_email(subject=f"Submit {new_bounty.Name} Bounty Suggested Edits?", sender="commissions@makurspace.com",
                    contact=editor, content=email_template)
 
 
@@ -103,13 +104,13 @@ def send_edit_to_benefactor(new_bounty, editor):
     murd.update([
         {mddb.group_key: "bounty_edit_confirmation",
          mddb.sort_key: bounty_edit_confirmation_id,
-         "BountyId": new_bounty.BountyId,
+         "BountyId": new_bounty.Id,
          "CreationTime": datetime.utcnow().isoformat(),
          "Editor": editor,
          "EdittedBounty": new_bounty.asm()}
     ])
 
-    new_bounty_map = new_bounty.asdict()
+    new_bounty_map = asdict(new_bounty)
     new_bounty_map['ReferenceMaterial'] = new_bounty.ReferenceMaterialHTML
 
     for key, value in {
@@ -122,7 +123,7 @@ def send_edit_to_benefactor(new_bounty, editor):
     email_template = email_template.replace("{BountyReward}", new_bounty.reward)
     email_template = email_template
 
-    ses.send_email(subject=f"Accept {new_bounty.BountyName} Bounty Suggested Edits?", sender="commissions@makurspace.com",
+    ses.send_email(subject=f"Accept {new_bounty.Name} Bounty Suggested Edits?", sender="commissions@makurspace.com",
                    contact=new_bounty.sanitized_contact, content=email_template)
 
 
@@ -130,8 +131,7 @@ def confirm_bounty_edits(event):
     bounty_edit_confirmation_id = unquote_plus(event['pathParameters']['bounty_edit_confirmation_id'])
     edit_ticket = murd.read_first(group="bounty_edit_confirmation", sort=bounty_edit_confirmation_id)
     editted_bounty = HyperBounty.fromm(edit_ticket['EdittedBounty'])
-    editted_bounty.store()
+    editted_bounty.set()
 
-    print(editted_bounty.asdict())
-    return 200, render_bounty(editted_bounty.BountyId).replace(
-        f">{editted_bounty.BountyName}</h1>", f">Updated! - {editted_bounty.BountyName}</h1>")
+    return 200, render_bounty(editted_bounty.Id).replace(
+        f">{editted_bounty.Name}</h1>", f">Updated! - {editted_bounty.Name}</h1>")

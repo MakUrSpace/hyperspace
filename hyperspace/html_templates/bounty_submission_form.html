@@ -13,7 +13,6 @@
   <link href="/css/makurspace.css" rel="stylesheet">
 
   <link rel="shortcut icon" href="/MakUrSpace_Logo.png" type="image/x-icon">
-
 </head>
 
 <body>
@@ -21,58 +20,69 @@
   <div class="container" style="margin-top: 50px; margin-bottom: 30px">
     <ol class="breadcrumb">
       <li class="breadcrumb-item">
-        <h1 class="mt-4 mb-3">Submit a Bounty!</h1>
+        <h1 id="headline" class="mt-4 mb-3">Submit a Bounty!</h1>
       </li>
     </ol>
     <div class="row">
       <div class="col-lg-8 mb-4">
         <form>
-          <div class="controls">
-            <label>Reference Material:<div id="reference_material_file_list"></div></label>
+          <div class="controls mb-4">
+            <label>Reference Material:<div id="refMatDisplayList"></div></label>
+            <small id="refMatHelp" class="form-text text-muted">
+              Upload files that can be used to complete the project, e.g. an STL file. This can include images of similar things, 3D models, or existing examples.
+            </small>
             <input type="file" multiple class="form-control" id="ReferenceMaterial" name="ReferenceMaterial" onchange="javascript:upload_reference_material()">
           </div>
         </form>
-        <form name="sentMessage" id="bounty_form" novalidate enctype="multipart/form-data" method="post" action="/rest/bounty_form" enctype="multipart/form-data">
+        <form name="sentMessage" id="bounty_form" novalidate enctype="multipart/form-data" method="post" action="/rest/bounty_form">
           <div class="control-group form-group input-group">
             <div class="controls">
               <label>Bounty Reward:</label>
-              <input type="float" class="form-control" id="Bounty" name="Bounty" required data-validation-required-message="Please enter a bounty reward amount.">
-              <p class="help-block"></p>
+              <small id="bountyRewardHelp" class="form-text text-muted">
+                This is the monetary reward in US dollars for successfully claiming the bounty.
+              </small>
+              <input type="float" class="form-control" id="Award" name="Award" required data-validation-required-message="Please enter a bounty reward amount.">
             </div>
           </div>
           <div class="control-group form-group">
             <div class="controls">
               <label>Bounty Name:</label>
-              <input type="text" class="form-control" id="BountyName" name="BountyName" required data-validation-required-message="Please enter a unique name for the bounty">
+              <small id="bountyRewardHelp" class="form-text text-muted">
+                Provide a name for the project
+              </small>
+              <input type="text" class="form-control" id="Name" name="Name" required data-validation-required-message="Please enter a unique name for the bounty">
             </div>
           </div>
           <div class="control-group form-group">
             <div class="controls">
               <label>Benefactor:</label>
+              <small id="bountyRewardHelp" class="form-text text-muted">
+                The benefactor will be the recipient of the completed bounty's products.
+              </small>
               <input type="text" class="form-control" id="Benefactor" name="Benefactor" required data-validation-required-message="Please enter a name for the recipient of the bounty">
             </div>
           </div>
           <div class="control-group form-group">
             <div class="controls">
               <label>Contact Benefactor at:</label>
+              <small id="bountyRewardHelp" class="form-text text-muted">
+                Provide a valid email address at which to contact the benefactor. This will be used to collect payment and complete delivery.
+              </small>
               <input type="email" class="form-control" id="Contact" name="Contact" required data-validation-required-message="Please enter an email address for the recipient of the bounty">
             </div>
           </div>
           <div class="control-group form-group">
             <div class="controls">
               <label>Bounty Description:</label>
-              <textarea rows="10" cols="100" class="form-control" id="BountyDescription" name="BountyDescription" required data-validation-required-message="Please a description of the bounty" rows="5" maxlength="999" style="resize:none"></textarea>
+              <small id="bountyRewardHelp" class="form-text text-muted">
+                Provide any description or project requirements.
+              </small>
+              <textarea rows="10" cols="100" class="form-control" id="Description" name="Description" required data-validation-required-message="Please a description of the bounty" rows="5" maxlength="999" style="resize:none"></textarea>
             </div>
           </div>
           <div class="control-group form-group">
             <div class="controls">
-              <label>Request Maker:</label>
-              <input type="text" class="form-control">
-            </div>
-          </div>
-          <div class="control-group form-group">
-            <div class="controls">
-              <input type="hidden" class="form-control" id="ReferenceMaterialNames" name="ReferenceMaterialNames" value='[]'>
+              <input type="hidden" class="form-control" id="refMatNames" name="ReferenceMaterialNames" value='[]'>
             </div>
           </div>
           <div class="control-group form-group">
@@ -85,9 +95,7 @@
           <button type="submit" class="btn btn-primary" id="sendMessageButton">Submit Bounty</button>
         </form>
       </div>
-
     </div>
-    <!-- /.row -->
   </div>
 
   <footer class="py-5 bg-dark">

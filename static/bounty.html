@@ -41,7 +41,7 @@
               <small id="bountyRewardHelp" class="form-text text-muted">
                 This is the monetary reward in US dollars for successfully claiming the bounty.
               </small>
-              <input type="float" class="form-control" id="Bounty" name="Bounty" required data-validation-required-message="Please enter a bounty reward amount.">
+              <input type="float" class="form-control" id="Award" name="Award" required data-validation-required-message="Please enter a bounty reward amount.">
             </div>
           </div>
           <div class="control-group form-group">
@@ -50,7 +50,7 @@
               <small id="bountyRewardHelp" class="form-text text-muted">
                 Provide a name for the project
               </small>
-              <input type="text" class="form-control" id="BountyName" name="BountyName" required data-validation-required-message="Please enter a unique name for the bounty">
+              <input type="text" class="form-control" id="Name" name="Name" required data-validation-required-message="Please enter a unique name for the bounty">
             </div>
           </div>
           <div class="control-group form-group">
@@ -77,16 +77,7 @@
               <small id="bountyRewardHelp" class="form-text text-muted">
                 Provide any description or project requirements.
               </small>
-              <textarea rows="10" cols="100" class="form-control" id="BountyDescription" name="BountyDescription" required data-validation-required-message="Please a description of the bounty" rows="5" maxlength="999" style="resize:none"></textarea>
-            </div>
-          </div>
-          <div class="control-group form-group">
-            <div class="controls">
-              <label>Request Maker:</label>
-              <small id="bountyRewardHelp" class="form-text text-muted">
-                Want a specific maker in the community to complete this project? Provide their name and they'll be notified of the project.
-              </small>
-              <input type="text" class="form-control">
+              <textarea rows="10" cols="100" class="form-control" id="Description" name="Description" required data-validation-required-message="Please a description of the bounty" rows="5" maxlength="999" style="resize:none"></textarea>
             </div>
           </div>
           <div class="control-group form-group">
@@ -104,9 +95,7 @@
           <button type="submit" class="btn btn-primary" id="sendMessageButton">Submit Bounty</button>
         </form>
       </div>
-
     </div>
-    <!-- /.row -->
   </div>
 
   <footer class="py-5 bg-dark">

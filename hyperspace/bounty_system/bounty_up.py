@@ -29,12 +29,12 @@ def email_ups(bounties):
 
         for pattern, replacement in {
             "{maker_name}": bounty.MakerName,
-            "{bounty_name}": bounty.BountyName,
-            "{bounty_id}": bounty.BountyId
+            "{bounty_name}": bounty.Name,
+            "{bounty_id}": bounty.Id
         }.items():
             up_email_template = up_email_template.replace(pattern, replacement)
 
-        print(f"Emailing {bounty.sanitized_maker_email} about {bounty.BountyName}")
+        print(f"Emailing {bounty.sanitized_maker_email} about {bounty.Name}")
         ses.send_email(subject=f'MakUrSpace UP Request', sender="commissions@makurspace.com",
                        contact=bounty.sanitized_maker_email, content=up_email_template)
 
@@ -73,6 +73,6 @@ def handle_up_submission(event):
     bounty.up_bounty(**up_submission)
 
     response_template = get_html_template("bounty_upped.html").replace(
-        "{bounty_name}", bounty.BountyName)
+        "{bounty_name}", bounty.Name)
 
     return 200, response_template

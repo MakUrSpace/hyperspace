@@ -14,7 +14,7 @@ def claim_bounty_form(event):
     bounty = HyperBounty.retrieve(bounty_id)
     upload_refmat_js = get_javascript_template("upload_reference_material.js").replace("{bounty_id}", bounty_id)
     form_template = get_html_template("claim_bounty_template.html").replace(
-        "{upload_reference_material_js}", upload_refmat_js).replace("{bounty_name}", bounty.BountyName)
+        "{upload_reference_material_js}", upload_refmat_js).replace("{bounty_name}", bounty.Name)
     return 200, form_template
 
 
@@ -37,7 +37,7 @@ def handle_bounty_claim(event):
     bounty.claim_bounty(**claim)
 
     response_template = get_html_template("bounty_claimed.html").replace(
-        "{bounty_name}", bounty.BountyName).replace(
+        "{bounty_name}", bounty.Name).replace(
         "{bounty_amount}", bounty.reward)
 
     return 200, response_template

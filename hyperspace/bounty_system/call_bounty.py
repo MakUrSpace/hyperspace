@@ -13,12 +13,12 @@ from hyperspace.objects import HyperBounty, HyperMaker
 
 def get_call_bounty_form(event):
     bounty_id = unquote_plus(event['pathParameters']['bounty_id'])
-    bounty = HyperBounty.get(id=bounty_id)
+    bounty = HyperBounty.retrieve(bounty_id)
     form_template = get_html_template("call_bounty_form.html")
 
     for pattern, replacement in {
-            "{bounty_name}": bounty.BountyName,
-            "{bounty_id}": bounty.BountyId}.items():
+            "{bounty_name}": bounty.Name,
+            "{bounty_id}": bounty.Id}.items():
         form_template = form_template.replace(pattern, replacement)
 
     return 200, form_template
@@ -26,7 +26,7 @@ def get_call_bounty_form(event):
 
 def receive_call_bounty(event):
     bounty_id = unquote_plus(event['pathParameters']['bounty_id'])
-    bounty = HyperBounty.get(bounty_id)
+    bounty = HyperBounty.retrieve(bounty_id)
     maker_contact = {}
 
     content_type = event['headers']['content-type']
@@ -48,10 +48,10 @@ def receive_call_bounty(event):
     email_template = get_html_template("call_bounty_email.html")
 
     for pattern, replacement in {
-            "{bounty_name}": bounty.BountyName,
+            "{bounty_name}": bounty.Name,
             "{call_confirmation_id}": confirmation_id,
             "{bounty_reward}": bounty.reward,
-            "{bounty_description}": bounty.BountyDescription,
+            "{bounty_description}": bounty.Description,
             "{maker_email}": bounty.sanitized_maker_email,
             "{maker_name}": maker_contact['maker_name']}.items():
         email_template = email_template.replace(pattern, replacement)
@@ -59,12 +59,12 @@ def receive_call_bounty(event):
     murd.update([
         {mddb.group_key: "bounty_call_confirmations",
          mddb.sort_key: confirmation_id,
-         "BountyId": bounty.BountyId,
+         "BountyId": bounty.Id,
          "MakerEmail": bounty.sanitized_maker_email,
          "MakerName": maker_contact["maker_name"],
          "CreationTime": datetime.utcnow().isoformat()}
     ])
-    ses.send_email(subject=f'So, you wanna make "{bounty.BountyName}"?', sender="commissions@makurspace.com",
+    ses.send_email(subject=f'So, you wanna make "{bounty.Name}"?', sender="commissions@makurspace.com",
                    contact=bounty.sanitized_maker_email, content=email_template)
     call_confirmation_email_sent = get_html_template("call_confirmation_email_sent.html")
     return 200, call_confirmation_email_sent
@@ -73,11 +73,11 @@ def receive_call_bounty(event):
 def confirm_call_bounty(event):
     confirmation_id = event['pathParameters']['call_confirmation_id']
     confirmationm = murd.read_first(group="bounty_call_confirmations", sort=confirmation_id)
-    bounty = HyperBounty.retreive(confirmationm['BountyId'])
+    bounty = HyperBounty.retrieve(confirmationm['BountyId'])
     bounty.MakerName = confirmationm['MakerName']
     bounty.MakerEmail = confirmationm['MakerEmail']
     bounty.change_state(target_state="called", from_state="confirmed")
 
-    called_bounty_confirmation = get_html_template("called_confirmation.html").replace("{bounty_name}", bounty.BountyName)
+    called_bounty_confirmation = get_html_template("called_confirmation.html").replace("{bounty_name}", bounty.Name)
 
     return 200, called_bounty_confirmation

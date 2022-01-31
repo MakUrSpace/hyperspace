@@ -61,7 +61,7 @@ def confirm_maker_registration(event):
         return 404
 
     maker = HyperMaker.fromm(maker_registration)
-    maker.store()
+    maker.set()
     murd.delete([maker_registration])
     confirmation_template = get_html_template("confirm_maker_registration_template.html")
     confirmation_template = confirmation_template.replace("{maker_id}", maker.MakerId)
