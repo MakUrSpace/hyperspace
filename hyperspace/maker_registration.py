@@ -6,7 +6,7 @@ from dataclasses import asdict
 from requests_toolbelt.multipart import MultipartDecoder
 
 import hyperspace.ses as ses
-from hyperspace.objects import mddb, murd, Maker
+from hyperspace.objects import mddb, murd, HyperMaker
 from hyperspace.utilities import get_form_name, get_html_template
 
 
@@ -45,7 +45,7 @@ def submit_maker_registration(event):
             content = content == 'on'
         new_maker_defn[form_name] = content
 
-    maker = Maker(**new_maker_defn, MakerId=str(uuid4()))
+    maker = HyperMaker(**new_maker_defn, Id=str(uuid4()))
     send_confirmation_to_maker(maker)
 
     response_template = get_html_template("maker_registration_response_template.html")
@@ -60,7 +60,7 @@ def confirm_maker_registration(event):
     except Exception:
         return 404
 
-    maker = Maker.fromm(maker_registration)
+    maker = HyperMaker.fromm(maker_registration)
     maker.store()
     murd.delete([maker_registration])
     confirmation_template = get_html_template("confirm_maker_registration_template.html")

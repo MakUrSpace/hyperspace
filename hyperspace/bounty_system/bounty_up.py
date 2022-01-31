@@ -4,7 +4,7 @@ import json
 
 from requests_toolbelt.multipart import MultipartDecoder
 
-from hyperspace.objects import Bounty
+from hyperspace.objects import HyperBounty
 from hyperspace.utilities import get_html_template, get_javascript_template, get_form_name
 from hyperspace import ses
 
@@ -15,7 +15,7 @@ SECONDS_IN_3_DAYS = 60 * 60 * 24 * 3
 def bounties_in_need_of_up(bounties=None):
     """ Returns bounties called 3 days or more ago or that set their UP 3 or more days ago """
     if bounties is None:
-        bounties = Bounty.get_bounties(group="called")
+        bounties = [bounty for bounty in HyperBounty.get() if bounty.state == "called"]
     return [
         bounty for bounty in bounties
         if (bounty.get_stamp("up") is None and bounty.time_since("called") > SECONDS_IN_3_DAYS)
@@ -69,7 +69,7 @@ def handle_up_submission(event):
         else:
             up_submission[form_name] = part.content.decode()
 
-    bounty = Bounty.get_bounty(bounty_id=up_submission.pop("BountyId"))
+    bounty = HyperBounty.get(id=up_submission.pop("BountyId"))
     bounty.up_bounty(**up_submission)
 
     response_template = get_html_template("bounty_upped.html").replace(

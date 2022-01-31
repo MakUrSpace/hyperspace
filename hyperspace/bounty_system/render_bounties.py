@@ -2,7 +2,7 @@ from urllib.parse import unquote_plus
 import re
 
 from hyperspace.utilities import get_html_template
-from hyperspace.objects import Bounty
+from hyperspace.objects import HyperBounty
 
 
 def get_rendered_bounty(event):
@@ -18,7 +18,7 @@ def render_bounty(bounty_id):
         "claim_this": """<button class="col btn btn-primary" id="claim_this_butotn" onclick="location.href='/rest/claim_bounty/{bounty_id}';">I've finished this!</button>""",
         "ask_benefactor": """<button class="col btn btn-primary" id="ask_this_butotn" onclick="location.href='/rest/ask_benefactor/{bounty_id}';">Ask the Benefactor!</button>""",
     }
-    bounty = Bounty.get_bounty(bounty_id)
+    bounty = HyperBounty.retrieve(bounty_id)
 
     if bounty.State == "confirmed":
         interactions = ["ask_benefactor", "suggest_edit", "make_this"]
@@ -28,32 +28,29 @@ def render_bounty(bounty_id):
         interactions = []
     interactions = "\n".join([bounty_interactions[i] for i in interactions])
 
-    template = get_html_template("bountycard_stl.html" if bounty.stls is not None else "bountyboard.html")
+    template = get_html_template("bountycard_stl.html" if len(bounty.stls) > 0 else "bountycard.html")
 
     secondary_images = []
     sec_img_template = """<div class="col-sm"><img class="d-block w-100" src="{src_url}" alt="{alt_text}"></div>"""
     for sec_img in bounty.secondary_images:
         secondary_images.append(sec_img_template.format(src_url=bounty.image_path(sec_img), alt_text=""))
-    
-    primary_stl = bounty.stls[0] if bounty.stls else ''
-    primary_stl_ip = bounty.image_path(primary_stl)
+
+    primary_stl = bounty.stls[0] if len(bounty.stls) > 0 else ''
+    primary_stl_image_path = bounty.image_path(primary_stl)
     position_search = re.search("_stlposition_(.*)x(.*)x(.*).stl", primary_stl)
     stl_position = "0 0 0" if position_search is None else " ".join([str(int(float(pos))) for pos in position_search.groups()])
-    print("ABABSADFASDFASDF")
-    print(primary_stl)
-    print(stl_position)
 
     for pattern, replacement in {
             "{interactions}": interactions,
             "{bounty_state}": bounty.State.upper(),
-            "{bounty_name}": bounty.BountyName,
-            "{bounty_id}": bounty.BountyId,
+            "{bounty_name}": bounty.Name,
+            "{bounty_id}": bounty.Id,
             "{bounty_reward}": bounty.reward,
-            "{primary_image}": bounty.primary_image,
-            "{primary_stl}": primary_stl_ip,
+            "{primary_image}": bounty.image_path(bounty.primary_image),
+            "{primary_stl}": primary_stl_image_path,
             "{model_position}": stl_position,
             "{secondary_images}": "\n".join(secondary_images),
-            "{bounty_description}": bounty.BountyDescription}.items():
+            "{bounty_description}": bounty.Description}.items():
         template = template.replace(pattern, replacement)
 
     return template
@@ -62,14 +59,14 @@ def render_bounty(bounty_id):
 def render_bountyboard(group="confirmed", limit=200):
     bountyboard_template = get_html_template("bountyboard.html")
     bountyboard_card_template = get_html_template("bountyboard_card.html")
-    bountyboard = Bounty.get_bounties(group=group, limit=limit)
+    bountyboard = HyperBounty.getByState(group)
     bountyboard_cards = []
     for bounty in bountyboard:
-        bountyboard_card = bountyboard_card_template.replace("{bounty_id}", bounty.BountyId)
+        bountyboard_card = bountyboard_card_template.replace("{bounty_id}", bounty.Id)
         bountyboard_card = bountyboard_card.replace("{primary_image}", bounty.image_path(bounty.primary_image))
-        bountyboard_card = bountyboard_card.replace("{bounty_name}", bounty.BountyName)
+        bountyboard_card = bountyboard_card.replace("{bounty_name}", bounty.Name)
         bountyboard_card = bountyboard_card.replace("{bounty_reward}", bounty.reward)
-        bountyboard_card = bountyboard_card.replace("{bounty_description}", bounty.BountyDescription)
+        bountyboard_card = bountyboard_card.replace("{bounty_description}", bounty.Description)
         bountyboard_cards.append(bountyboard_card)
     bountyboard_template = bountyboard_template.replace("{bounties}", "\n".join(bountyboard_cards))
     return bountyboard_template

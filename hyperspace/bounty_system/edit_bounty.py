@@ -6,14 +6,14 @@ import json
 
 from hyperspace.murd import mddb, murd
 from hyperspace.utilities import get_html_template, get_javascript_template, billboardPage, process_multipart_form_submission, sanitize_email
-from hyperspace.objects import Bounty, Maker
+from hyperspace.objects import HyperBounty, HyperMaker
 from hyperspace.bounty_system.render_bounties import render_bounty
 import hyperspace.ses as ses
 
 
 def get_edit_bounty_form(event):
     bounty_id = unquote_plus(event['pathParameters']['bounty_id'])
-    bounty = Bounty.get_bounty(bounty_id)
+    bounty = HyperBounty.retriev(bounty_id)
     form_template = get_html_template("edit_bounty_form.html")
     script_template = \
         get_javascript_template("upload_reference_material.js").replace("{bounty_id}", bounty_id)
@@ -33,7 +33,7 @@ def get_edit_bounty_form(event):
 @billboardPage
 def receive_bounty_edits(event):
     bounty_id = unquote_plus(event['pathParameters']['bounty_id'])
-    bounty = Bounty.get_bounty(bounty_id)
+    bounty = HyperBounty.retrieve(bounty_id)
     bounty_edit = {}
 
     content_type = event['headers']['content-type']
@@ -42,17 +42,16 @@ def receive_bounty_edits(event):
     bounty_edit = process_multipart_form_submission(form_data, content_type)
 
     try:
-        editor = Maker.retrieve(bounty_edit.pop("EditorContact")).MakerEmail
+        editor = HyperMaker.retrieveByEmail(bounty_edit.pop("EditorContact")).MakerEmail
     except sanitize_email.InvalidEmailAddress:
         raise Exception("To suggest a Bounty edit, you must submit a valid email address")
-    except Maker.UnrecognizedMaker:
+    except HyperMaker.UnrecognizedMaker:
         raise Exception('To suggest a Bounty edit, you must be a registered maker. <a href="https://www.makurspace.com/maker_registration.html">Consider registering here</a>')
 
     changeMap = json.loads(bounty_edit.pop("changed"))
-    editted_bounty = Bounty(**bounty_edit,
-                            BountyId=bounty.BountyId,
-                            Benefactor=bounty.Benefactor,
-                            Contact=bounty.Contact)
+    editted_bounty = HyperBounty(**bounty_edit, Id=bounty.Id,
+                                 Benefactor=bounty.Benefactor,
+                                 Contact=bounty.Contact)
 
     for attr in changeMap:
         print(f"Updating {attr}")
@@ -92,7 +91,7 @@ def send_edit_to_editor(new_bounty, old_bounty_name, editor):
 def submit_bounty_edits(event):
     bounty_edit_id = unquote_plus(event['pathParameters']['bounty_edit_id'])
     edit_ticket = murd.read_first(group="bounty_edit_submission", sort=bounty_edit_id)
-    editted_bounty = Bounty.fromm(edit_ticket['EdittedBounty'])
+    editted_bounty = HyperBounty.fromm(edit_ticket['EdittedBounty'])
     send_edit_to_benefactor(editted_bounty, edit_ticket['Editor'])
     return 200, "Bounty edits confirmed! Your suggested edits have been sent to the bounty's benefactor for review"
 
@@ -130,7 +129,7 @@ def send_edit_to_benefactor(new_bounty, editor):
 def confirm_bounty_edits(event):
     bounty_edit_confirmation_id = unquote_plus(event['pathParameters']['bounty_edit_confirmation_id'])
     edit_ticket = murd.read_first(group="bounty_edit_confirmation", sort=bounty_edit_confirmation_id)
-    editted_bounty = Bounty.fromm(edit_ticket['EdittedBounty'])
+    editted_bounty = HyperBounty.fromm(edit_ticket['EdittedBounty'])
     editted_bounty.store()
 
     print(editted_bounty.asdict())

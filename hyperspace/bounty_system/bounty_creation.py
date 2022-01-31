@@ -4,7 +4,7 @@ import json
 from base64 import b64decode
 
 from hyperspace.murd import mddb, murd
-from hyperspace.objects import Bounty
+from hyperspace.objects import HyperBounty
 from hyperspace.utilities import get_html_template, process_multipart_form_submission
 import hyperspace.ses as ses
 import hyperspace.s3 as s3
@@ -46,7 +46,7 @@ def submit_bounty_form(event):
 
     new_bounty_defn = process_multipart_form_submission(form_data, content_type)
 
-    new_bounty = Bounty(**new_bounty_defn)
+    new_bounty = HyperBounty(**new_bounty_defn)
     try:
         new_bounty.store()
     except Exception:
@@ -74,7 +74,7 @@ def submit_bounty_or_return_form(event):
 
 def get_bounty_by_confirmation(confirmation_id):
     confirmationm = murd.read_first(group="bounty_creation_confirmations", sort=confirmation_id)
-    return Bounty.get_bounty(confirmationm['BountyId'])
+    return HyperBounty.get(confirmationm['BountyId'])
 
 
 def confirm_bounty_creation(event):

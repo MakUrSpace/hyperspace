@@ -8,12 +8,12 @@ from requests_toolbelt.multipart import MultipartDecoder
 import hyperspace.ses as ses
 from hyperspace.murd import mddb, murd
 from hyperspace.utilities import get_html_template, get_form_name
-from hyperspace.objects import Bounty, Maker
+from hyperspace.objects import HyperBounty, HyperMaker
 
 
 def get_call_bounty_form(event):
     bounty_id = unquote_plus(event['pathParameters']['bounty_id'])
-    bounty = Bounty.get_bounty(bounty_id)
+    bounty = HyperBounty.get(id=bounty_id)
     form_template = get_html_template("call_bounty_form.html")
 
     for pattern, replacement in {
@@ -26,7 +26,7 @@ def get_call_bounty_form(event):
 
 def receive_call_bounty(event):
     bounty_id = unquote_plus(event['pathParameters']['bounty_id'])
-    bounty = Bounty.get_bounty(bounty_id)
+    bounty = HyperBounty.get(bounty_id)
     maker_contact = {}
 
     content_type = event['headers']['content-type']
@@ -39,9 +39,8 @@ def receive_call_bounty(event):
 
     # Discover maker
     try:
-        maker = Maker.retrieve(maker_contact['maker_email'])
-    except KeyError:
-        # TODO: email potential new maker (create maker application)
+        maker = [maker for maker in HyperMaker.get() if maker_contact['maker_email'] == maker.MakerEmail][0]
+    except IndexError:
         raise Exception("Unable to process unregistered maker")
 
     bounty.MakerEmail = maker.MakerEmail
@@ -74,7 +73,7 @@ def receive_call_bounty(event):
 def confirm_call_bounty(event):
     confirmation_id = event['pathParameters']['call_confirmation_id']
     confirmationm = murd.read_first(group="bounty_call_confirmations", sort=confirmation_id)
-    bounty = Bounty.get_bounty(confirmationm['BountyId'])
+    bounty = HyperBounty.retreive(confirmationm['BountyId'])
     bounty.MakerName = confirmationm['MakerName']
     bounty.MakerEmail = confirmationm['MakerEmail']
     bounty.change_state(target_state="called", from_state="confirmed")
