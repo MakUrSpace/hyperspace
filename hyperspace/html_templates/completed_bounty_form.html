@@ -7,7 +7,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
   <meta name="description" content="MakUrSpace Bounty Submission Form">
   <meta name="author" content="MakUrSpace, LLC">
-  <title>MakUrSpace Portfolio Application</title>
+  <title>MakUrSpace Portfolio Submission</title>
   <link href="/vendor/bootstrap/css/bootstrap.min.css" rel="stylesheet">
   <link href="/css/modern-business.css" rel="stylesheet">
   <link href="/css/makurspace.css" rel="stylesheet">
@@ -20,7 +20,7 @@
   <div class="container" style="margin-top: 50px; margin-bottom: 30px">
     <ol class="breadcrumb">
       <li class="breadcrumb-item">
-        <h1 id="headline" class="mt-4 mb-3">Submit a Portfolio Project!</h1>
+        <h1 id="headline" class="text-center mt-4 mb-3">Submit a completed project for the MakUrSpace Community Portfolio!</h1>
       </li>
     </ol>
     <div class="row">
@@ -34,14 +34,14 @@
             <input type="file" multiple class="form-control" id="ReferenceMaterial" name="ReferenceMaterial" onchange="javascript:upload_reference_material()">
           </div>
         </form>
-        <form name="sentMessage" id="bounty_form" novalidate enctype="multipart/form-data" method="post" action="/rest/bounty_form">
+        <form name="sentMessage" id="bounty_form" novalidate enctype="multipart/form-data" method="post" action="/rest/completed_bounty_form">
           <div class="control-group form-group input-group">
             <div class="controls">
               <label>Bounty Reward:</label>
               <small id="bountyRewardHelp" class="form-text text-muted">
-                This is the monetary reward in US dollars for completing the project.
+                This is the monetary reward in US dollars for successfully completing the project.
               </small>
-              <input type="float" class="form-control" id="Award" name="Award" required data-validation-required-message="Please enter a bounty reward amount." value=35>
+              <input type="float" class="form-control" id="Award" name="Award" required data-validation-required-message="Please enter a bounty reward amount." value=0>
             </div>
           </div>
           <div class="control-group form-group">
@@ -55,20 +55,11 @@
           </div>
           <div class="control-group form-group">
             <div class="controls">
-              <label>Benefactor:</label>
+              <label>Maker Email:</label>
               <small id="bountyRewardHelp" class="form-text text-muted">
-                The benefactor was be the recipient of the completed bounty's products.
+                Registered email address of the maker who made the project
               </small>
-              <input type="text" class="form-control" id="Benefactor" name="Benefactor" required data-validation-required-message="Please enter a name for the recipient of the bounty">
-            </div>
-          </div>
-          <div class="control-group form-group">
-            <div class="controls">
-              <label>Contact Benefactor at:</label>
-              <small id="bountyRewardHelp" class="form-text text-muted">
-                Provide a valid email address at which to contact the benefactor. This will be used to collect payment and complete delivery.
-              </small>
-              <input type="email" class="form-control" id="Contact" name="Contact" required data-validation-required-message="Please enter an email address for the recipient of the bounty">
+              <input type="text" class="form-control" id="Contact" name="Contact" required data-validation-required-message="Please enter the registered email address of the maker who made the project">
             </div>
           </div>
           <div class="control-group form-group">
@@ -92,7 +83,7 @@
           </div>
           <div id="success"></div>
           <!-- For success/fail messages -->
-          <button type="submit" class="btn btn-primary" id="sendMessageButton">Submit Bounty</button>
+          <button type="submit" class="btn btn-primary" id="sendMessageButton">Submit Completed Bounty!</button>
         </form>
       </div>
     </div>

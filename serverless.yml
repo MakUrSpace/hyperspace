@@ -95,6 +95,12 @@ functions:
           path: /rest/bounty_confirmation/{bounty_confirmation_id}
           method: get
       - http:
+          path: /rest/completed_bounty_form
+          method: post
+      - http:
+          path: /rest/completed_bounty_confirmation/{bounty_confirmation_id}
+          method: get
+      - http:
           path: /rest/ask_benefactor/{bounty_id}
           method: get
       - http:

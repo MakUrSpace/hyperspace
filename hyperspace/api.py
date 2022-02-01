@@ -10,6 +10,7 @@ from hyperspace.bounty_system.edit_bounty import get_edit_bounty_form, receive_b
 from hyperspace.bounty_system.call_bounty import get_call_bounty_form, receive_call_bounty, confirm_call_bounty
 from hyperspace.bounty_system.bounty_up import up_submission_form, handle_up_submission
 from hyperspace.bounty_system.claim_bounty import claim_bounty_form, handle_bounty_claim
+from hyperspace.bounty_system.completed_bounty_creation import submit_completed_bounty_form, confirm_completed_bounty_creation
 
 from hyperspace.reference_material import get_refmat_surl, render_refmat_upload_script
 from hyperspace.maker_registration import submit_maker_registration, confirm_maker_registration
@@ -35,6 +36,10 @@ def build_page():
     # Bounty Submission
     page.add_endpoint(method="post", path="/rest/bounty_form", func=submit_bounty_or_return_form, content_type="text/html")
     page.add_endpoint(method="get", path="/rest/bounty_confirmation/{bounty_confirmation_id}", func=confirm_bounty_creation, content_type="text/html")
+
+    # Portfolio Project/Completed Bounty Submission
+    page.add_endpoint(method="post", path="/rest/completed_bounty_form", func=submit_completed_bounty_form, content_type="text/html")
+    page.add_endpoint(method="get", path="/rest/completed_bounty_confirmation/{bounty_confirmation_id}", func=confirm_completed_bounty_creation, content_type="text/html")
 
     # Ask the Benefactor
     page.add_endpoint(method="get", path="/rest/ask_benefactor/{bounty_id}", func=get_ask_benefactor_form, content_type="text/html")
