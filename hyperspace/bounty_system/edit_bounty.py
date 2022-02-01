@@ -68,7 +68,9 @@ def send_edit_to_editor(new_bounty, old_bounty_name, editor):
     new_bounty_map = asdict(new_bounty)
     new_bounty_map['ReferenceMaterial'] = new_bounty.ReferenceMaterialHTML
 
-    for key, value in new_bounty_map.items():
+    for key, value in {
+            **new_bounty_map,
+            **{"BountyName": new_bounty.Name, "BountyDescription": new_bounty.Description}}.items():
         email_template = email_template.replace(f"{{{key}}}", f"{value}")
     email_template = email_template.replace("{OldBountyName}", old_bounty_name)
 
@@ -115,7 +117,8 @@ def send_edit_to_benefactor(new_bounty, editor):
 
     for key, value in {
         **new_bounty_map,
-        **{"bounty_edit_confirmation_id": bounty_edit_confirmation_id, "BountyReward": new_bounty.reward, "editor": editor}
+        **{"bounty_edit_confirmation_id": bounty_edit_confirmation_id, "BountyReward": new_bounty.reward, "editor": editor,
+           "BountyName": new_bounty.Name, "BountyDescription": new_bounty.Description}
     }.items():
         email_template = email_template.replace(f"{{{key}}}", f"{value}")
 
