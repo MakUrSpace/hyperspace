@@ -22,7 +22,7 @@ class MUS_Bounty_Board(jp.Div):
                         </div>
                         <div class="p-4">
                               <p class="uppercase tracking-wide text-sm font-bold text-gray-700">Testing Spot</p>
-                              <p class="text-3xl text-gray-900">$750,000</p>
+                              <p class="text-3xl text-gray-900">MUS Prints</p>
                               <p class="text-gray-700">742 Evergreen Terrace</p>
                         </div>
                         <div class="flex p-4 border-t border-gray-300 text-gray-700">
