@@ -9,7 +9,7 @@ class MUS_Bounty_Board(jp.Div):
    <div class="container">
       <div class="flex flex-wrap -mx-4">
       <!--Start of first div bounty content-->
-         <div class="max-w-6xl mx-auto">
+         <div class="max-w-6xl">
             <div class="flex items-center justify-center">
                   <div class="max-w-sm w-full sm:w-full lg:w-full py-6 px-3">
                      <div class="bg-white shadow-xl rounded-lg overflow-hidden">
@@ -57,7 +57,7 @@ class MUS_Bounty_Board(jp.Div):
       <!--End of first div content-->
 
       <!--Start of second div bounty content-->
-         <div class="max-w-6xl mx-auto">
+         <div class="max-w-6xl">
             <div class="flex items-center justify-center">
                   <div class="max-w-sm w-full sm:w-full lg:w-full py-6 px-3">
                      <div class="bg-white shadow-xl rounded-lg overflow-hidden">
@@ -105,7 +105,7 @@ class MUS_Bounty_Board(jp.Div):
       <!--End of second div content-->
 
       <!--Start of third div bounty content-->
-         <div class="max-w-6xl mx-auto">
+         <div class="max-w-6xl">
             <div class="flex items-center justify-center">
                   <div class="max-w-sm w-full sm:w-full lg:w-full py-6 px-3">
                      <div class="bg-white shadow-xl rounded-lg overflow-hidden">
