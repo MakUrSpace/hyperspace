@@ -17,12 +17,12 @@ def send_confirmation_to_maker(maker):
         email_template = email_template.replace(f"{{{key}}}", f"{value}")
 
     email_template = email_template.replace("{maker_name}", maker.MakerName)
-    email_template = email_template.replace("{maker_id}", maker.MakerId)
+    email_template = email_template.replace("{maker_id}", maker.Id)
 
     murd.update([
         maker.asm(),
         {mddb.group_key: "maker_registrations",
-         mddb.sort_key: maker.MakerId,
+         mddb.sort_key: maker.Id,
          **asdict(maker),
          "CreationTime": datetime.utcnow().isoformat()}
     ])
@@ -64,5 +64,5 @@ def confirm_maker_registration(event):
     maker.set()
     murd.delete([maker_registration])
     confirmation_template = get_html_template("confirm_maker_registration_template.html")
-    confirmation_template = confirmation_template.replace("{maker_id}", maker.MakerId)
+    confirmation_template = confirmation_template.replace("{maker_id}", maker.Id)
     return 200, confirmation_template
