@@ -1,11 +1,8 @@
 from urllib.parse import unquote_plus
 from base64 import b64decode
-import json
-
-from requests_toolbelt.multipart import MultipartDecoder
 
 from hyperspace.objects import HyperBounty
-from hyperspace.utilities import get_html_template, get_javascript_template, get_form_name
+from hyperspace.utilities import get_html_template, get_javascript_template, process_multipart_form_submission
 from hyperspace import ses
 
 
@@ -15,7 +12,7 @@ SECONDS_IN_3_DAYS = 60 * 60 * 24 * 3
 def bounties_in_need_of_up(bounties=None):
     """ Returns bounties called 3 days or more ago or that set their UP 3 or more days ago """
     if bounties is None:
-        bounties = [bounty for bounty in HyperBounty.get() if bounty.state == "called"]
+        bounties = [bounty for bounty in HyperBounty.get() if bounty.State == "called"]
     return [
         bounty for bounty in bounties
         if (bounty.get_stamp("up") is None and bounty.time_since("called") > SECONDS_IN_3_DAYS)
@@ -59,15 +56,8 @@ def handle_up_submission(event):
     content_type = event['headers']['content-type']
     form_data = b64decode(event['body'])
     up_submission = {}
-    multipart_decoder = MultipartDecoder(content=form_data, content_type=content_type)
-    for part in multipart_decoder.parts:
-        form_name = get_form_name(part)
-        assert form_name in ["PercentageDone", "WorkCompleted", "ReferenceMaterialNames", "BountyId"], \
-            f"Unrecognized form name: {form_name}"
-        if form_name == 'ReferenceMaterialNames':
-            up_submission['ReferenceMaterial'] = json.loads(part.content)
-        else:
-            up_submission[form_name] = part.content.decode()
+
+    up_submission = process_multipart_form_submission(form_data, content_type)
 
     bounty = HyperBounty.get(id=up_submission.pop("BountyId"))
     bounty.up_bounty(**up_submission)

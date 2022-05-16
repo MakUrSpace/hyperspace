@@ -175,10 +175,12 @@ class HyperBounty(
     @property
     def secondary_images(self):
         formats = ["jpg", "jpeg", "png"]
+        primary_image = self.primary_image
         file_list = self.FinalImages if self.FinalImages is not None else self.ReferenceMaterial
         file_list = [file
                      for file in file_list
-                     if self.get_filetype(file) in formats]
+                     if self.get_filetype(file) in formats
+                     and file != primary_image]
         return file_list
 
     def image_path(self, image):

@@ -1,11 +1,8 @@
 from urllib.parse import unquote_plus
 from base64 import b64decode
-import json
-
-from requests_toolbelt.multipart import MultipartDecoder
 
 from hyperspace.objects import HyperBounty
-from hyperspace.utilities import get_html_template, get_javascript_template, get_form_name
+from hyperspace.utilities import get_html_template, get_javascript_template, process_multipart_form_submission
 
 
 def claim_bounty_form(event):
@@ -22,16 +19,9 @@ def handle_bounty_claim(event):
     """ Accept bounty claim """
     content_type = event['headers']['content-type']
     form_data = b64decode(event['body'])
-    claim = {}
-    multipart_decoder = MultipartDecoder(content=form_data, content_type=content_type)
-    for part in multipart_decoder.parts:
-        form_name = get_form_name(part)
-        assert form_name in ["CompletionNotes", "ReferenceMaterialNames", "BountyId"], \
-            f"Unrecognized form name: {form_name}"
-        if form_name == 'ReferenceMaterialNames':
-            claim['FinalImages'] = json.loads(part.content)
-        else:
-            claim[form_name] = part.content.decode()
+
+    claim = process_multipart_form_submission(form_data, content_type)
+    claim["FinalImages"] = claim.pop("ReferenceMaterial")
 
     bounty = HyperBounty.retrieve(claim.pop("BountyId"))
     bounty.claim_bounty(**claim)

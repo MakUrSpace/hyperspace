@@ -37,11 +37,14 @@ def receive_call_bounty(event):
         form_name = get_form_name(part)
         maker_contact[form_name] = part.content.decode()
 
+    if 'maker_email' not in maker_contact:
+        raise Exception("No email supplied")
+
     # Discover maker
     try:
         maker = [maker for maker in HyperMaker.get() if maker_contact['maker_email'] == maker.MakerEmail][0]
     except IndexError:
-        raise Exception("Unable to process unregistered maker")
+        raise Exception(f"Unable to process unregistered maker: {maker_contact['maker_email']}")
 
     bounty.MakerEmail = maker.MakerEmail
     confirmation_id = str(uuid4())

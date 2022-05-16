@@ -27,25 +27,6 @@
     <div class="row" style="margin-bottom: 30px">
       <div class="col-md-8">
         <img class="img-fluid" src="{primary_image}" alt="{bounty_name} reference image">
-        <div class="container">
-          <div class="carousel slide" data-ride="carousel" id="multi_item">
-            <div class="carousel-inner">
-              <div class="carousel-item active">
-                <div class="row">
-                  {secondary_images}
-                </div>
-              </div>
-            </div>
-            <a class="carousel-control-prev" href="#multi_item" role="button" data-slide="prev">
-              <span class="carousel-control-prev-icon" aria-hidden="true"></span>
-              <span class="sr-only">Previous</span>
-            </a>
-            <a class="carousel-control-next" href="#multi_item" role="button" data-slide="next">
-              <span class="carousel-control-next-icon" aria-hidden="true"></span>
-              <span class="sr-only">Next</span>
-            </a>
-          </div>
-        </div>
       </div>
 
       <div class="col-md-4">
@@ -59,6 +40,7 @@
         </div>
       </div>
 
+      {secondary_image_carousel}
     </div>
 
     <ol class="breadcrumb">
@@ -68,31 +50,7 @@
     </ol>
 
     <div class="row">
-
-      <div class="col-md-3 col-sm-6 mb-4">
-        <a href="/rest/rendered_bounty/Water Lily Agitator">
-          <img class="img-fluid" src="/bountyboard/Water Lily Agitator/WaterLily.jpg" alt="Water Lily Agitator">
-        </a>
-      </div>
-
-      <div class="col-md-3 col-sm-6 mb-4">
-        <a href="/rest/rendered_bounty/Pocket Hole Drill Jig">
-          <img class="img-fluid" src="/bountyboard/Pocket Hole Drill Jig/DrillJig.png" alt="Pocket Hole Drill Jig">
-        </a>
-      </div>
-
-      <div class="col-md-3 col-sm-6 mb-4">
-        <a href="/rest/rendered_bounty/RUHAcam">
-          <img class="img-fluid" src="/bountyboard/RUHAcam/ruhacam-bom.jpg" alt="RUHAcam">
-        </a>
-      </div>
-
-      <div class="col-md-3 col-sm-6 mb-4">
-        <a href="/rest/rendered_bounty/Spinning Top">
-          <img class="img-fluid" src="/bountyboard/Spinning Top/SpinningTop.png" alt="Spinning Top">
-        </a>
-      </div>
-
+      {related_bounties}
     </div>
 
   </div>

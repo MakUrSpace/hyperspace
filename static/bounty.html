@@ -7,7 +7,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
   <meta name="description" content="MakUrSpace Bounty Submission Form">
   <meta name="author" content="MakUrSpace, LLC">
-  <title>MakUrSpace Portfolio Application</title>
+  <title>MakUrSpace Bounty Application</title>
   <link href="/vendor/bootstrap/css/bootstrap.min.css" rel="stylesheet">
   <link href="/css/modern-business.css" rel="stylesheet">
   <link href="/css/makurspace.css" rel="stylesheet">
@@ -20,7 +20,7 @@
   <div class="container" style="margin-top: 50px; margin-bottom: 30px">
     <ol class="breadcrumb">
       <li class="breadcrumb-item">
-        <h1 id="headline" class="mt-4 mb-3">Submit a Portfolio Project!</h1>
+        <h1 id="headline" class="mt-4 mb-3">Submit a Bounty!</h1>
       </li>
     </ol>
     <div class="row">
@@ -29,7 +29,7 @@
           <div class="controls mb-4">
             <label>Reference Material:<div id="refMatDisplayList"></div></label>
             <small id="refMatHelp" class="form-text text-muted">
-              Upload files that were used to complete the project, e.g. an STL file. This can include images of similar things, 3D models, or existing examples.
+              Upload files that might be referenced to complete the project, e.g. an STL file. This can include images of similar things, 3D models, or existing examples.
             </small>
             <input type="file" multiple class="form-control" id="ReferenceMaterial" name="ReferenceMaterial" onchange="javascript:upload_reference_material()">
           </div>
@@ -57,7 +57,7 @@
             <div class="controls">
               <label>Benefactor:</label>
               <small id="bountyRewardHelp" class="form-text text-muted">
-                The benefactor was be the recipient of the completed bounty's products.
+                The benefactor is the recipient of the completed bounty's products.
               </small>
               <input type="text" class="form-control" id="Benefactor" name="Benefactor" required data-validation-required-message="Please enter a name for the recipient of the bounty">
             </div>
@@ -83,6 +83,11 @@
           <div class="control-group form-group">
             <div class="controls">
               <input type="hidden" class="form-control" id="refMatNames" name="ReferenceMaterialNames" value='[]'>
+            </div>
+          </div>
+          <div class="control-group form-group">
+            <div class="controls">
+              <input type="hidden" class="form-control" id="checkedRefMatNames" name="CheckedReferenceMaterialNames" value='[]'>
             </div>
           </div>
           <div class="control-group form-group">

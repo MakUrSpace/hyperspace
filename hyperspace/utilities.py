@@ -72,8 +72,12 @@ def process_multipart_form_submission(form_data, content_type):
     decoded_data = {}
     for part in multipart_decoder.parts:
         form_name = get_form_name(part)
-        if form_name == 'ReferenceMaterialNames':
-            decoded_data['ReferenceMaterial'] = loads(part.content)
+        if form_name in ['ReferenceMaterialNames', 'CheckedReferenceMaterialNames']:
+            decoded_data[form_name.replace("Names", "")] = loads(part.content)
         else:
             decoded_data[form_name] = part.content.decode()
+
+    if 'ReferenceMaterial' in decoded_data and 'CheckedReferenceMaterial' in decoded_data:
+        decoded_data['ReferenceMaterial'] = decoded_data.pop('CheckedReferenceMaterial')
+
     return decoded_data

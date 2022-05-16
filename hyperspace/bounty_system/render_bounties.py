@@ -3,11 +3,43 @@ import re
 
 from hyperspace.utilities import get_html_template
 from hyperspace.objects import HyperBounty
+import random
 
 
 def get_rendered_bounty(event):
     bounty_id = unquote_plus(event['pathParameters']['bounty_id'])
     return 200, render_bounty(bounty_id)
+
+
+def build_secondary_image_carousel(bounty):
+    carousel_template = """
+      <div class="container">
+        <div class="carousel slide" data-ride="carousel" id="multi_item">
+          <div class="carousel-inner">
+            <div class="carousel-item active">
+              <div class="row">
+                {secondary_images}
+              </div>
+            </div>
+          </div>
+          <a class="carousel-control-prev" href="#multi_item" role="button" data-slide="prev">
+            <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+            <span class="sr-only">Previous</span>
+          </a>
+          <a class="carousel-control-next" href="#multi_item" role="button" data-slide="next">
+            <span class="carousel-control-next-icon" aria-hidden="true"></span>
+            <span class="sr-only">Next</span>
+          </a>
+        </div>
+      </div>
+"""
+
+    sec_img_template = """<div class="col-sm"><img class="d-block" src="{src_url}" alt="{alt_text}"></div>"""
+    secondary_images = []
+    for sec_img in bounty.secondary_images:
+        secondary_images.append(sec_img_template.format(src_url=bounty.image_path(sec_img), alt_text=""))
+    secondary_images = "\n\n".join(secondary_images)
+    return carousel_template.replace("{secondary_images}", secondary_images) if secondary_images else ""
 
 
 def render_bounty(bounty_id):
@@ -30,15 +62,21 @@ def render_bounty(bounty_id):
 
     template = get_html_template("bountycard_stl.html" if len(bounty.stls) > 0 else "bountycard.html")
 
-    secondary_images = []
-    sec_img_template = """<div class="col-sm"><img class="d-block w-100" src="{src_url}" alt="{alt_text}"></div>"""
-    for sec_img in bounty.secondary_images:
-        secondary_images.append(sec_img_template.format(src_url=bounty.image_path(sec_img), alt_text=""))
+    secondary_image_carousel = build_secondary_image_carousel(bounty)
 
     primary_stl = bounty.stls[0] if len(bounty.stls) > 0 else ''
     primary_stl_image_path = bounty.image_path(primary_stl)
     position_search = re.search("_stlposition_(.*)x(.*)x(.*).stl", primary_stl)
     stl_position = "0 0 0" if position_search is None else " ".join([str(int(float(pos))) for pos in position_search.groups()])
+
+    related_bounties = random.sample(HyperBounty.get(limit=30), 4)
+    related_bounties = "\n\n".join([f"""
+      <div class="col-md-3 col-sm-6 mb-4">
+        <a href="/rest/rendered_bounty/{related_bounty.Id}">
+          <img class="img-fluid" src="{related_bounty.image_path(related_bounty.primary_image)}" alt="{related_bounty.Name}">
+        </a>
+      </div>
+""" for related_bounty in related_bounties])
 
     for pattern, replacement in {
             "{interactions}": interactions,
@@ -49,8 +87,9 @@ def render_bounty(bounty_id):
             "{primary_image}": bounty.image_path(bounty.primary_image),
             "{primary_stl}": primary_stl_image_path,
             "{model_position}": stl_position,
-            "{secondary_images}": "\n".join(secondary_images),
-            "{bounty_description}": bounty.Description}.items():
+            "{secondary_image_carousel}": secondary_image_carousel,
+            "{bounty_description}": bounty.Description,
+            "{related_bounties}": related_bounties}.items():
         template = template.replace(pattern, replacement)
 
     return template
