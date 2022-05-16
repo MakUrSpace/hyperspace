@@ -9,7 +9,7 @@ class MUS_Bounty_Board(jp.Div):
    <div class="container">
       <div class="flex flex-wrap -mx-4">
       <!--Start of first div bounty content-->
-         <div class="max-w-6xl mx-auto">
+         <div class="max-w-6xl">
             <div class="flex items-center justify-center">
                   <div class="max-w-sm w-full sm:w-full lg:w-full py-6 px-3">
                      <div class="bg-white shadow-xl rounded-lg overflow-hidden">
@@ -22,7 +22,7 @@ class MUS_Bounty_Board(jp.Div):
                         </div>
                         <div class="p-4">
                               <p class="uppercase tracking-wide text-sm font-bold text-gray-700">Testing Spot</p>
-                              <p class="text-3xl text-gray-900">$750,000</p>
+                              <p class="text-3xl text-gray-900">MUS Prints</p>
                               <p class="text-gray-700">742 Evergreen Terrace</p>
                         </div>
                         <div class="flex p-4 border-t border-gray-300 text-gray-700">
@@ -57,7 +57,7 @@ class MUS_Bounty_Board(jp.Div):
       <!--End of first div content-->
 
       <!--Start of second div bounty content-->
-         <div class="max-w-6xl mx-auto">
+         <div class="max-w-6xl">
             <div class="flex items-center justify-center">
                   <div class="max-w-sm w-full sm:w-full lg:w-full py-6 px-3">
                      <div class="bg-white shadow-xl rounded-lg overflow-hidden">
@@ -105,7 +105,7 @@ class MUS_Bounty_Board(jp.Div):
       <!--End of second div content-->
 
       <!--Start of third div bounty content-->
-         <div class="max-w-6xl mx-auto">
+         <div class="max-w-6xl">
             <div class="flex items-center justify-center">
                   <div class="max-w-sm w-full sm:w-full lg:w-full py-6 px-3">
                      <div class="bg-white shadow-xl rounded-lg overflow-hidden">
