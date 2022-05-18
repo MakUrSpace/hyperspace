@@ -128,12 +128,12 @@ class HyperBounty(
         return f"${self.sanitized_reward:.2f}"
 
     @property
-    def sanitized_contact(self):
-        return sanitize_email(self.Contact)
-
-    @property
     def sanitized_maker_email(self):
         return sanitize_email(self.MakerEmail)
+
+    @property
+    def sanitized_contact_email(self):
+        return sanitize_email(self.Contact)
 
     @staticmethod
     def get_filetype(filename):

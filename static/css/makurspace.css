@@ -7,6 +7,10 @@ body {
   background-color: #333333
 }
 
+.text-muted {
+    color: #fc757d !important;
+}
+
 .carousel-item {
   margin-top: 50px;
   width: 100%;
@@ -67,6 +71,7 @@ footer {
 
 .form-control {
   background-color: #333333;
+  color: #a11111;
 }
 
 .list-group-item {

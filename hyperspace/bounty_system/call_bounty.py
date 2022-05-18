@@ -40,6 +40,8 @@ def receive_call_bounty(event):
     if 'maker_email' not in maker_contact:
         raise Exception("No email supplied")
 
+    print(maker_contact)
+
     # Discover maker
     try:
         maker = [maker for maker in HyperMaker.get() if maker_contact['maker_email'] == maker.MakerEmail][0]
@@ -56,7 +58,7 @@ def receive_call_bounty(event):
             "{bounty_reward}": bounty.reward,
             "{bounty_description}": bounty.Description,
             "{maker_email}": bounty.sanitized_maker_email,
-            "{maker_name}": maker_contact['maker_name']}.items():
+            "{maker_name}": maker.MakerName}.items():
         email_template = email_template.replace(pattern, replacement)
 
     murd.update([
@@ -64,7 +66,7 @@ def receive_call_bounty(event):
          mddb.sort_key: confirmation_id,
          "BountyId": bounty.Id,
          "MakerEmail": bounty.sanitized_maker_email,
-         "MakerName": maker_contact["maker_name"],
+         "MakerName": maker.MakerName,
          "CreationTime": datetime.utcnow().isoformat()}
     ])
     ses.send_email(subject=f'So, you wanna make "{bounty.Name}"?', sender="commissions@makurspace.com",

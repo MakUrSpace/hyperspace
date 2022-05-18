@@ -3,7 +3,7 @@ from uuid import uuid4
 from base64 import b64decode
 
 from hyperspace.utilities import get_html_template, process_multipart_form_submission, billboardPage
-from hyperspace.objects import HyperBounty, HyperQuestion
+from hyperspace.objects import HyperMaker, HyperBounty, HyperQuestion
 import hyperspace.ses as ses
 
 
@@ -26,8 +26,14 @@ def submit_benefactor_question(event):
 
     submitted_question = process_multipart_form_submission(form_data, content_type)
 
+    # Discover maker
+    try:
+        maker = [maker for maker in HyperMaker.get() if submitted_question['Questioner'] == maker.MakerEmail][0]
+    except IndexError:
+        raise Exception(f"Unable to process question from unregistered maker: {submitted_question['Questioner']}.")
+
     question = HyperQuestion(Id=str(uuid4()), BountyId=bounty_id,
-                             Questioner=submitted_question['Questioner'],
+                             Questioner=maker.Id,
                              QuestionText=submitted_question['QuestionText'],
                              QuestionTitle=submitted_question['QuestionTitle'],
                              Answer="")
@@ -36,14 +42,14 @@ def submit_benefactor_question(event):
     email_template = get_html_template("ask_benefactor_email.html")
     for pattern, value in {
         "bounty_name": bounty.Name,
-        "questioner": question.Questioner,
+        "questioner": maker.MakerName,
         "question_title": question.QuestionTitle,
         "question_text": question.QuestionText,
         "question_id": question.Id
     }.items():
         email_template = email_template.replace(f"{{{pattern}}}", value)
 
-    ses.send_email(subject=f'MakUrSpace, got a question for you!', sender="commissions@makurspace.com",
+    ses.send_email(subject=f'{bounty.Benefactor}, got a question for you!', sender="commissions@makurspace.com",
                    contact=bounty.sanitized_contact, content=email_template)
 
     return 200, f"Bounty question submitted! Your question was sent along to the benefactor of {bounty.Name}. You'll be notified when they answer."
@@ -66,6 +72,8 @@ def get_question_answer_form(event):
 def submit_benefactor_answer(event):
     question_id = unquote_plus(event['pathParameters']['question_id'])
     question = HyperQuestion.retrieve(question_id)
+    questionMaker = HyperMaker.retrieve(question.Questioner)
+    bounty = HyperBounty.retrieve(question.BountyId)
 
     content_type = event['headers']['content-type']
     form_data = b64decode(event['body'])
@@ -76,11 +84,13 @@ def submit_benefactor_answer(event):
 
     email_template = get_html_template("ask_benefactor_answer_email.html")
     for pattern, value in {
-        "bounty_id": question.BountyId,
+        "bounty_name": bounty.Name,
         "question_title": question.QuestionTitle,
         "question_text": question.QuestionText,
         "question_answer": question.Answer
     }.items():
         email_template = email_template.replace(f"{{{pattern}}}", value)
+    ses.send_email(subject=f'{questionMaker.MakerName}, got an answer for you!', sender="commissions@makurspace.com",
+                   contact=questionMaker.sanitized_maker_email, content=email_template)
 
     return 200, f'Question answer received! Your answer was sent to the questioner and added to the <a href="https://www.makurspace.com/rest/rendered_bounty/{question.BountyId}">bounty listing</a>'

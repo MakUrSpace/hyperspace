@@ -42,7 +42,8 @@ def receive_bounty_edits(event):
     bounty_edit = process_multipart_form_submission(form_data, content_type)
 
     try:
-        editor = HyperMaker.retrieveByEmail(bounty_edit.pop("EditorContact")).MakerEmail
+        editMaker = HyperMaker.retrieveByEmail(bounty_edit.pop("EditorContact"))
+        editor = editMaker.Id
     except sanitize_email.InvalidEmailAddress:
         raise Exception("To suggest a Bounty edit, you must submit a valid email address")
     except HyperMaker.UnrecognizedMaker:
@@ -58,11 +59,11 @@ def receive_bounty_edits(event):
         print(f"Updating {attr}")
         setattr(bounty, attr, getattr(editted_bounty, attr))
 
-    send_edit_to_editor(bounty, bounty.Name, editor)
-    return 200, f"Edit form submission received! Expect an email at <b>{editor}</b> to confirm the submission"
+    send_edit_to_editor(bounty, bounty.Name, editMaker)
+    return 200, f"Edit form submission received! Expect an email at <b>{editMaker.sanitized_maker_email}</b> to confirm the submission"
 
 
-def send_edit_to_editor(new_bounty, old_bounty_name, editor):
+def send_edit_to_editor(new_bounty, old_bounty_name, editMaker):
     email_template = get_html_template("bounty_editor_email_template.html")
 
     new_bounty_map = asdict(new_bounty)
@@ -80,14 +81,14 @@ def send_edit_to_editor(new_bounty, old_bounty_name, editor):
          mddb.sort_key: bounty_edit_id,
          "BountyId": new_bounty.Id,
          "CreationTime": datetime.utcnow().isoformat(),
-         "Editor": editor,
+         "Editor": editMaker.Id,
          "EdittedBounty": new_bounty.asm()}
     ])
     email_template = email_template.replace("{bounty_edit_id}", bounty_edit_id)
     email_template = email_template.replace("{BountyReward}", new_bounty.reward)
 
     ses.send_email(subject=f"Submit {new_bounty.Name} Bounty Suggested Edits?", sender="commissions@makurspace.com",
-                   contact=editor, content=email_template)
+                   contact=editMaker.sanitized_maker_email, content=email_template)
 
 
 @billboardPage
@@ -101,6 +102,7 @@ def submit_bounty_edits(event):
 
 def send_edit_to_benefactor(new_bounty, editor):
     email_template = get_html_template("bounty_suggestion_email_template.html")
+    editMaker = HyperMaker.retrieve(editor)
 
     bounty_edit_confirmation_id = str(uuid4())
     murd.update([
@@ -108,7 +110,7 @@ def send_edit_to_benefactor(new_bounty, editor):
          mddb.sort_key: bounty_edit_confirmation_id,
          "BountyId": new_bounty.Id,
          "CreationTime": datetime.utcnow().isoformat(),
-         "Editor": editor,
+         "Editor": editMaker.Id,
          "EdittedBounty": new_bounty.asm()}
     ])
 
@@ -117,7 +119,7 @@ def send_edit_to_benefactor(new_bounty, editor):
 
     for key, value in {
         **new_bounty_map,
-        **{"bounty_edit_confirmation_id": bounty_edit_confirmation_id, "BountyReward": new_bounty.reward, "editor": editor,
+        **{"bounty_edit_confirmation_id": bounty_edit_confirmation_id, "BountyReward": new_bounty.reward, "editor": editMaker.MakerName,
            "BountyName": new_bounty.Name, "BountyDescription": new_bounty.Description}
     }.items():
         email_template = email_template.replace(f"{{{key}}}", f"{value}")
@@ -127,7 +129,7 @@ def send_edit_to_benefactor(new_bounty, editor):
     email_template = email_template
 
     ses.send_email(subject=f"Accept {new_bounty.Name} Bounty Suggested Edits?", sender="commissions@makurspace.com",
-                   contact=new_bounty.sanitized_contact, content=email_template)
+                   contact=new_bounty.sanitized_contact_email, content=email_template)
 
 
 def confirm_bounty_edits(event):
