@@ -121,11 +121,14 @@ class HyperBounty(
         try:
             return float(sanitized_reward)
         except ValueError:
-            return 9999.99
+            return -1.0
 
     @property
     def reward(self):
-        return f"${self.sanitized_reward:.2f}"
+        if self.sanitized_reward > 0:
+            return f"${self.sanitized_reward:.2f}"
+        else:
+            return "???"
 
     @property
     def sanitized_maker_email(self):
