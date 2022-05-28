@@ -34,7 +34,7 @@ def send_completed_bounty_to_contact(completed_bounty):
     ])
 
     ses.send_email(subject=f"{completed_bounty.Name} Bounty", sender="commissions@makurspace.com",
-                   contact=completed_bounty.sanitized_contact, content=email_template)
+                   contact=completed_bounty.sanitized_contact_email, content=email_template)
 
 
 def submit_completed_bounty_form(event):

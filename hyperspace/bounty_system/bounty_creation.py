@@ -34,7 +34,7 @@ def send_bounty_to_contact(new_bounty):
     ])
 
     ses.send_email(subject=f"{new_bounty.Name} Bounty", sender="commissions@makurspace.com",
-                   contact=new_bounty.sanitized_contact, content=email_template)
+                   contact=new_bounty.sanitized_contact_email, content=email_template)
 
 
 def submit_bounty_form(event):
@@ -82,9 +82,10 @@ def get_bounty_by_confirmation(confirmation_id):
 def confirm_bounty_creation(event):
     confirmation_id = event['pathParameters']['bounty_confirmation_id']
     bounty = get_bounty_by_confirmation(confirmation_id)
-    bounty.change_state("confirmed", from_state="submitted")
+    bounty.change_state("verified", from_state="submitted")
+    bounty.stampVERIFIED()
 
     bounty_template = render_bounty(bounty.Id).replace(
         '<ol class="breadcrumb">',
-        '<h1 class="mt-4 mb-3">Bounty Posted!!!</h1><ol class="breadcrumb">')
+        '<h1 class="mt-4 mb-3">Bounty submitted for review!</h1><ol class="breadcrumb">')
     return 200, bounty_template

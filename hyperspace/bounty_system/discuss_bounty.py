@@ -50,7 +50,7 @@ def submit_benefactor_question(event):
         email_template = email_template.replace(f"{{{pattern}}}", value)
 
     ses.send_email(subject=f'{bounty.Benefactor}, got a question for you!', sender="commissions@makurspace.com",
-                   contact=bounty.sanitized_contact, content=email_template)
+                   contact=bounty.sanitized_contact_email, content=email_template)
 
     return 200, f"Bounty question submitted! Your question was sent along to the benefactor of {bounty.Name}. You'll be notified when they answer."
 

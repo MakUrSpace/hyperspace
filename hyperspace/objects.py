@@ -74,6 +74,7 @@ class HyperObject:
 
 
 @BuildStamp("Submitted")
+@BuildStamp("Verified")
 @BuildStamp("Confirmed")
 @BuildStamp("Called")
 @BuildStamp("Up")
@@ -84,7 +85,7 @@ class HyperBounty(
     # *[BuildStamp(sn) for sn in hyperBountyStamps]
 ):
     groupName = "bounty"
-    legal_states = ["submitted", "confirmed", "called", "claimed"]
+    legal_states = ["submitted", "verified", "confirmed", "called", "claimed"]
 
     State: str
     Award: str
@@ -102,10 +103,11 @@ class HyperBounty(
     def fromm(cls, m):
         kwargs = {k: v for k, v in m.items() if k in cls.__dataclass_fields__.keys()}
         kwargs['Id'] = m['SORT']
-        kwargs['SubmittedStamp'] = m['SubmissionStamp'] if 'SubmittedStamp' not in kwargs else kwargs['SubmittedStamp']
-        kwargs['Award'] = m['Bounty'] if 'Award' not in kwargs else kwargs['Award']
-        kwargs['Name'] = m['BountyName'] if 'Name' not in kwargs else kwargs['Name']
-        kwargs['Description'] = m['BountyDescription'] if 'Description' not in kwargs else kwargs['Description']
+        kwargs['SubmittedStamp'] = kwargs['SubmittedStamp'] if 'SubmittedStamp' in kwargs else None
+        kwargs['Award'] = kwargs['Award'] if 'Award' in kwargs else None
+        kwargs['Name'] = kwargs['Name'] if 'Name' in kwargs else None
+        kwargs['Description'] = kwargs['Description'] if 'Description' in kwargs else None
+        kwargs['State'] = kwargs['State'] if 'State' in kwargs else 'submitted'
         return cls(**kwargs)
 
     @classmethod
