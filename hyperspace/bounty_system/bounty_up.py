@@ -12,7 +12,7 @@ SECONDS_IN_3_DAYS = 60 * 60 * 24 * 3
 def bounties_in_need_of_up(bounties=None):
     """ Returns bounties called 3 days or more ago or that set their UP 3 or more days ago """
     if bounties is None:
-        bounties = [bounty for bounty in HyperBounty.get() if bounty.State == "called"]
+        bounties = HyperBounty.getByState("called")
     return [
         bounty for bounty in bounties
         if (bounty.get_stamp("up") is None and bounty.time_since("called") > SECONDS_IN_3_DAYS)

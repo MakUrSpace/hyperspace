@@ -9,16 +9,24 @@ from hyperspace.murd import mddb, murd
 
 def BuildStamp(stampName):
     def dataClassBuilder(dataClass):
+
+        def stampNamer(stamp_name):
+            return f"{stamp_name.capitalize()}Stamp"
+
+        stampFieldName = stampNamer(stampName)
+
         stampDataClass = make_dataclass(
             stampName,
-            fields=[(f"{stampName.capitalize()}Stamp", str, "")],
+            fields=[(stampFieldName, str, None)],
             namespace={
-                f"stamp{stampName.upper()}": lambda self: setattr(self, f"{stampName}Stamp", timestamp()),
+                f"stamp{stampName.upper()}": lambda self: setattr(self, stampFieldName, timestamp()),
                 f"timeSince{stampName.upper()}":
                     lambda self:
                         None
-                        if not (stamp := getattr(self, f"{stampName}Stamp")) else
-                        (datetime.utcnow() - datetime.fromisoformat(stamp).total_seconds())
+                        if not (stamp := getattr(self, stampFieldName)) else
+                        (datetime.utcnow() - datetime.fromisoformat(stamp)).total_seconds(),
+                "get_stamp": lambda self, stamp_name: getattr(self, stampNamer(stamp_name), None),
+                "time_since": lambda self, stamp_name: getattr(self, f"timeSince{stamp_name.upper()}", lambda: None)()
             }
         )
 
@@ -98,6 +106,7 @@ class HyperBounty(
     WorkCompleted: float = None
     FinalImages: list = None
     CompletionNotes: str = None
+    MakerId: str = None
 
     @classmethod
     def fromm(cls, m):
@@ -133,8 +142,14 @@ class HyperBounty(
             return "???"
 
     @property
+    def MakerName(self):
+        maker = HyperMaker.retrieve(self.MakerId)
+        return maker.MakerName
+
+    @property
     def sanitized_maker_email(self):
-        return sanitize_email(self.MakerEmail)
+        maker = HyperMaker.retrieve(self.MakerId)
+        return maker.sanitized_maker_email
 
     @property
     def sanitized_contact_email(self):
