@@ -9,7 +9,7 @@ from hyperspace.bounty_system.discuss_bounty import get_ask_benefactor_form, sub
 from hyperspace.bounty_system.edit_bounty import get_edit_bounty_form, receive_bounty_edits, submit_bounty_edits, confirm_bounty_edits
 from hyperspace.bounty_system.call_bounty import get_call_bounty_form, receive_call_bounty, confirm_call_bounty
 from hyperspace.bounty_system.bounty_up import up_submission_form, handle_up_submission
-from hyperspace.bounty_system.claim_bounty import claim_bounty_form, handle_bounty_claim
+from hyperspace.bounty_system.claim_bounty import claim_bounty_form, handle_bounty_claim, claim_bounty
 from hyperspace.bounty_system.completed_bounty_creation import submit_completed_bounty_form, confirm_completed_bounty_creation
 
 from hyperspace.reference_material import get_refmat_surl, render_refmat_upload_script
@@ -69,6 +69,7 @@ def build_page():
     # Claim Bounty
     page.add_endpoint(method="get", path="/rest/claim_bounty/{bounty_id}", func=claim_bounty_form, content_type="text/html")
     page.add_endpoint(method="post", path="/rest/claim_bounty", func=handle_bounty_claim, content_type="text/html")
+    page.add_endpoint(method="get", path="/rest/claim_bounty_confirm/{claim_confirmation_id}", func=claim_bounty, content_type="text/html")
 
     # Bounty Pages
     page.add_endpoint(method="get", path="/rest/rendered_bountyboard", func=rendered_bountyboard, content_type="text/html")

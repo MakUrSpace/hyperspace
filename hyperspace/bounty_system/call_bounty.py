@@ -40,15 +40,13 @@ def receive_call_bounty(event):
     if 'maker_email' not in maker_contact:
         raise Exception("No email supplied")
 
-    print(maker_contact)
-
     # Discover maker
     try:
-        maker = [maker for maker in HyperMaker.get() if maker_contact['maker_email'] == maker.MakerEmail][0]
-    except IndexError:
-        raise Exception(f"Unable to process unregistered maker: {maker_contact['maker_email']}")
+        maker = HyperMaker.retrieveByEmail(maker_contact['maker_email'])
+    except Exception:
+        raise Exception(f"Unrecognized maker: {maker_contact['maker_email']}")
 
-    bounty.MakerEmail = maker.MakerEmail
+    bounty.MakerId = maker.Id
     confirmation_id = str(uuid4())
     email_template = get_html_template("call_bounty_email.html")
 
@@ -57,7 +55,7 @@ def receive_call_bounty(event):
             "{call_confirmation_id}": confirmation_id,
             "{bounty_reward}": bounty.reward,
             "{bounty_description}": bounty.Description,
-            "{maker_email}": bounty.sanitized_maker_email,
+            "{maker_email}": maker.sanitized_maker_email,
             "{maker_name}": maker.MakerName}.items():
         email_template = email_template.replace(pattern, replacement)
 
@@ -65,12 +63,12 @@ def receive_call_bounty(event):
         {mddb.group_key: "bounty_call_confirmations",
          mddb.sort_key: confirmation_id,
          "BountyId": bounty.Id,
-         "MakerEmail": bounty.sanitized_maker_email,
+         "MakerEmail": maker.sanitized_maker_email,
          "MakerName": maker.MakerName,
          "CreationTime": datetime.utcnow().isoformat()}
     ])
     ses.send_email(subject=f'So, you wanna make "{bounty.Name}"?', sender="commissions@makurspace.com",
-                   contact=bounty.sanitized_maker_email, content=email_template)
+                   contact=maker.sanitized_maker_email, content=email_template)
     call_confirmation_email_sent = get_html_template("call_confirmation_email_sent.html")
     return 200, call_confirmation_email_sent
 

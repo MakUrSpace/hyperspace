@@ -87,13 +87,15 @@ class HyperObject:
 @BuildStamp("Called")
 @BuildStamp("Up")
 @BuildStamp("Claimed")
+@BuildStamp("Approved")
+@BuildStamp("Fulfilled")
 @dataclass
 class HyperBounty(
     HyperObject,
     # *[BuildStamp(sn) for sn in hyperBountyStamps]
 ):
     groupName = "bounty"
-    legal_states = ["submitted", "verified", "confirmed", "called", "claimed"]
+    legal_states = ["submitted", "verified", "confirmed", "called", "claimed", "approved", "fulfilled"]
 
     State: str
     Award: str
@@ -215,6 +217,13 @@ class HyperBounty(
         return '<br>'.join([
             f'<img src=https://www.makurspace.com{self.image_path(refMatName)} alt="{self.Name}: {refMatName}" width="200" height="200">'
             for refMatName in self.ReferenceMaterial
+        ])
+
+    @property
+    def FinalImagesHTML(self):
+        return '<br>'.join([
+            f'<img src=https://www.makurspace.com{self.image_path(finalImage)} alt="{self.Name}: {finalImage}" width="200" height="200">'
+            for finalImage in self.FinalImages
         ])
 
     def set_state(self, target_state):
