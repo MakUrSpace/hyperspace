@@ -67,9 +67,9 @@ def handle_bounty_claim(event):
 def claim_bounty(event):
     confirmation_id = event['pathParameters']['claim_confirmation_id']
     claim_confirmation = murd.read_first(group="bounty_claim_confirmations", sort=confirmation_id)
-    claim = claim_confirmation["Claim"]
+    claim = json.loads(claim_confirmation["Claim"])
     bounty = HyperBounty.retrieve(claim_confirmation["BountyId"])
-    bounty.claim(**claim)
+    bounty.claim_bounty(**claim)
 
     return 200, f"""
 <h3>You approved {bounty.Name}!</h3><br>

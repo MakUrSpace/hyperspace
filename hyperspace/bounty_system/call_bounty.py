@@ -63,8 +63,7 @@ def receive_call_bounty(event):
         {mddb.group_key: "bounty_call_confirmations",
          mddb.sort_key: confirmation_id,
          "BountyId": bounty.Id,
-         "MakerEmail": maker.sanitized_maker_email,
-         "MakerName": maker.MakerName,
+         "MakerId": maker.Id,
          "CreationTime": datetime.utcnow().isoformat()}
     ])
     ses.send_email(subject=f'So, you wanna make "{bounty.Name}"?', sender="commissions@makurspace.com",
@@ -77,8 +76,7 @@ def confirm_call_bounty(event):
     confirmation_id = event['pathParameters']['call_confirmation_id']
     confirmationm = murd.read_first(group="bounty_call_confirmations", sort=confirmation_id)
     bounty = HyperBounty.retrieve(confirmationm['BountyId'])
-    bounty.MakerName = confirmationm['MakerName']
-    bounty.MakerEmail = confirmationm['MakerEmail']
+    bounty.MakerId = confirmationm['MakerId']
     bounty.change_state(target_state="called", from_state="confirmed")
 
     called_bounty_confirmation = get_html_template("called_confirmation.html").replace("{bounty_name}", bounty.Name)

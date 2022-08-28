@@ -2,6 +2,7 @@ from datetime import datetime
 from uuid import uuid4
 import json
 from base64 import b64decode
+from geoip import geolite2
 
 from hyperspace.murd import mddb, murd
 from hyperspace.objects import HyperBounty, asdict
@@ -39,6 +40,13 @@ def send_bounty_to_contact(new_bounty):
 
 def submit_bounty_form(event):
     s3.write(f"submissions/sub-{uuid4()}", json.dumps(event).encode(), "makurspace")
+
+    sourceIp = event['requestContext']['identity']['sourceIp']
+    if geolite2.lookup(sourceIp).country != 'US':
+        return 403, "Unable to serve requests from outside of the USA"
+    else:
+        print("Request appears to be from within the US")
+
     new_bounty_defn = {}
 
     content_type = event['headers']['content-type']

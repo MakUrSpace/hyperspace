@@ -149,6 +149,9 @@ functions:
           path: /rest/claim_bounty
           method: post
       - http:
+          path: /rest/claim_bounty_confirm/{claim_confirmation_id}
+          method: get
+      - http:
           path: /rest/rendered_bountyboard
           method: get
       - http:

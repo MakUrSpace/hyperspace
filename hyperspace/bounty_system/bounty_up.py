@@ -2,7 +2,7 @@ from urllib.parse import unquote_plus
 from base64 import b64decode
 
 from hyperspace.objects import HyperBounty
-from hyperspace.utilities import get_html_template, get_javascript_template, process_multipart_form_submission
+from hyperspace.utilities import get_html_template, get_javascript_template, process_multipart_form_submission, sanitize_email
 from hyperspace import ses
 
 
@@ -59,7 +59,11 @@ def handle_up_submission(event):
 
     up_submission = process_multipart_form_submission(form_data, content_type)
 
-    bounty = HyperBounty.get(id=up_submission.pop("BountyId"))
+    maker_email = up_submission.pop('MakerEmail')
+    bounty = HyperBounty.retrieve(up_submission.pop("BountyId"))
+    assert bounty.sanitized_maker_email == sanitize_email(maker_email), \
+        f"Maker mismatch: {maker_email} does not appear to be assigned to this bounty. If you disagree, please contact cloud@makurspace.com"
+
     bounty.up_bounty(**up_submission)
 
     response_template = get_html_template("bounty_upped.html").replace(

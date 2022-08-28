@@ -239,6 +239,10 @@ class HyperBounty(
         assert target_state != self.State
         self.set_state(target_state)
 
+    def approve_for_posting(self):
+        assert self.State == 'verified', "Bounty not available for posting"
+        self.set_state("confirmed")
+
     def up_bounty(self, PercentageDone, WorkCompleted, ReferenceMaterial):
         self.PercentageDone = float(PercentageDone)
         self.WorkCompleted = f"{self.WorkCompleted}\n\n{WorkCompleted}" if self.WorkCompleted is not None else WorkCompleted

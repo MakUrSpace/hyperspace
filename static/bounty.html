@@ -20,7 +20,25 @@
   <div class="container" style="margin-top: 50px; margin-bottom: 30px">
     <ol class="breadcrumb">
       <li class="breadcrumb-item">
-        <h1 id="headline" class="mt-4 mb-3">Submit a Bounty!</h1>
+        <div class="container" style="background-color: #7d7d7d">
+          <div class="col-lg-8 col-md-12">
+            <h1 id="headline" class="mt-4 mb-3 text-center">Submit a Bounty!</h1>
+          </div>
+          <div class="row">
+            <div class="col">
+              <img src="MakUrSpace_Logo.png" alt="MakUrSpace Logo" class="img-fluid">
+            </div>
+            <div class="col-lg-8 col-md-12">
+              <p>MakUrSpace's makers make things whether we ask them to or not. They've long ago exhausted the mind's inherent dopamine pathways for manifesting their own dreams. So, we come to you -- filament in hand -- and ask: do you have any dreams we can make real?</p>
+              <p>Define a project here, with a description, reference images, STL files, links to Pinterest boards, a scanned copy of your HOA Articles of 
+              Incorporation and any personal diaries. Whatever you want -- it's all optional!</p>
+              <p>What is required is a unique name for the project and the name and email of who gets it (the bounty's benefactor).</p>
+              <p>We'll review the project and more than likely post it to our bounty board. From there, one or more of our makers will take up the hunt for that sweet, sweet dopamine!</p>
+              <p>Expect no timeline, updates, or general customer support; rejoice when you get something approaching all 3!</p>
+              <p>And if you loved the whole experience, consider dropping a donation <a href="https://opencollective.com/makurspace/donate">here</a> -- or subscribing <a href="https://opencollective.com/makurspace/tiers">here</a>!</p>
+            </div>
+          </div>
+        </div>
       </li>
     </ol>
     <div class="row">
@@ -37,11 +55,11 @@
         <form name="sentMessage" id="bounty_form" novalidate enctype="multipart/form-data" method="post" action="/rest/bounty_form">
           <div class="control-group form-group input-group">
             <div class="controls">
-              <label>Bounty Reward:</label>
+              <label>Bounty Value:</label>
               <small id="bountyRewardHelp" class="form-text text-muted">
-                This is the monetary reward in US dollars for completing the project.
+                This is the estimated monetary value in US dollars of the bounty.
               </small>
-              <input type="float" class="form-control" id="Award" name="Award" required data-validation-required-message="Please enter a bounty reward amount." value=35>
+              <input type="float" class="form-control" id="Award" name="Award" data-validation-required-message="Please enter a bounty reward amount." value=35>
             </div>
           </div>
           <div class="control-group form-group">
@@ -66,7 +84,7 @@
             <div class="controls">
               <label>Contact Benefactor at:</label>
               <small id="bountyRewardHelp" class="form-text text-muted">
-                Provide a valid email address at which to contact the benefactor. This will be used to collect payment and complete delivery.
+                Provide a valid email address at which to contact the benefactor. This will be used to complete delivery.
               </small>
               <input type="email" class="form-control" id="Contact" name="Contact" required data-validation-required-message="Please enter an email address for the recipient of the bounty">
             </div>

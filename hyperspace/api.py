@@ -82,7 +82,7 @@ def build_page():
 
 def lambda_handler(event, context):
     start = datetime.utcnow()
-    print(f"Handling {event['path']} + {event['httpMethod']}")
+    print(f"Handling {event}")
     page = build_page()
     results = page.handle_request(event)
     build_time = (datetime.utcnow() - start).total_seconds()
