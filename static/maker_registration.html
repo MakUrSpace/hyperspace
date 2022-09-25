@@ -26,7 +26,7 @@
     </ol>
     <div class="row">
       <div class="col-lg-8 mb-4">
-        <form name="sentMessage" id="maker_registration_form" novalidate enctype="multipart/form-data" method="post" action="/rest/maker_registration" enctype="multipart/form-data">
+        <form name="sentMessage" id="maker_registration_form" enctype="multipart/form-data" method="post" action="/rest/maker_registration" enctype="multipart/form-data">
           <div class="control-group form-group input-group">
             <div class="controls">
               <label>Maker Name</label>
@@ -44,7 +44,7 @@
             <div class="controls">
               <label>Do you agree to the MakUrSpace Maker Contract terms and conditions, as defined below?</label>
 	            <ul class="list-group">
-                   <li class="list-group-item">I am a sapient, human individual</li>
+                   <li class="list-group-item">I am a sapient, human individual. I further submit the below as proof of my sapience.</li>
                    <li class="list-group-item">I am a self-employed maker utilizing MakUrSpace to find and facilitate work</li>
 		               <li class="list-group-item">None of MakUrSpace, LLC, a bounty's benefactor, or a bounty's submitter are liable for any injuries I may incur in pursuit of a bounty</li>
 	            </ul>
@@ -52,6 +52,13 @@
           </div>
           <div class="control-group form-group">
             <input type="checkbox" class="form-control" id="ConfirmedContract" name="ConfirmedContract" required data-validation-required-message="To register as a MakUrSpace Maker, you must agree to the contract">
+          </div>
+          <div class="control-group form-group">
+            <label>Evidence of Sapience:</label>
+            <small id="sapienceHelp" class="form-text text-muted">
+              Provide unique text showing your sapience. Examples include descriptions of self or favorite works, a timeline of recent of projects -- any text that isn't likely found in a book will do.
+            </small>
+            <textarea rows="3" cols="100" class="form-control" id="SapienceEvidence" name="SapienceEvidence" required data-validation-required-message="Please a unique, text-based evidence of sapience" maxlength="999" style="resize:none"></textarea>
           </div>
           <div id="success"></div>
           <!-- For success/fail messages -->

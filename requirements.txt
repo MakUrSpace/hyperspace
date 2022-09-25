@@ -4,3 +4,4 @@ murdaws
 requests_toolbelt
 python-geoip-python3
 python-geoip-geolite2
+import-ipynb

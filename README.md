@@ -16,6 +16,7 @@ HyperSpace is the MakUrSpace operations and logistics system composed of a front
 * [Install Python 3](https://www.python.org/downloads/)
 * [Install NodeJS (for serverless)](https://nodejs.org/en/download/)
 * [Install Serverless Framework](https://www.serverless.com/framework/docs/getting-started/)
+* [Guarantee stl_to_image has been deployed to AWS Account](https://github.com/MakUrSpace/solidpoly)
 * Install serverless plugins:
 ```
 sls plugin install --name serverless-s3-sync

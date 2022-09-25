@@ -81,6 +81,9 @@ class HyperObject:
         return [cls.fromm(m) for m in murd.read(group=cls.groupName, sort=id, min_sort=min_sort, max_sort=max_sort, limit=limit, ascending_order=ascending_order)]
 
 
+HyperBountyLegalStates = ["submitted", "verified", "confirmed", "called", "claimed", "approved", "fulfilled"]
+
+
 @BuildStamp("Submitted")
 @BuildStamp("Verified")
 @BuildStamp("Confirmed")
@@ -272,10 +275,16 @@ class HyperMaker(HyperObject):
     MakerEmail: str
     MakerName: str
     ConfirmedContract: bool
+    SapienceEvidence: str
 
     @classmethod
     def fromm(cls, m):
-        return cls(MakerEmail=m['MakerEmail'], MakerName=m['MakerName'], Id=m['Id'] if 'Id' in m else m['MakerId'], ConfirmedContract=m['ConfirmedContract'])
+        return cls(
+            MakerEmail=m['MakerEmail'],
+            MakerName=m['MakerName'],
+            Id=m['Id'] if 'Id' in m else m['MakerId'],
+            ConfirmedContract=m['ConfirmedContract'],
+            SapienceEvidence=m['SapienceEvidence'])
 
     @property
     def sanitized_maker_email(self):
