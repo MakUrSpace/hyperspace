@@ -86,3 +86,15 @@ def copy(s3_path, source_bucket, destination_bucket):
         Bucket=destination_bucket,
         Key=s3_path,
         CopySource={'Bucket': source_bucket, 'Key': s3_path})
+
+
+def renamePublic(oldPath, newPath, bucket=None):
+    bucket = bucket if bucket is not None else default_bucket
+    print(f"Renaming {oldPath} to {newPath}")
+    s3c = boto3.client("s3")
+    s3c.copy_object(
+        Bucket=bucket,
+        Key=newPath,
+        CopySource={'Bucket': bucket, 'Key': oldPath},
+        ACL='public-read')
+    delete(oldPath)

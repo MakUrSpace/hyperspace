@@ -67,7 +67,7 @@ def render_bounty(bounty_id):
     primary_stl = bounty.stls[0] if len(bounty.stls) > 0 else ''
     primary_stl_image_path = bounty.image_path(primary_stl)
     position_search = re.search("_stlposition_(.*)x(.*)x(.*).stl", primary_stl)
-    stl_position = "0 0 0" if position_search is None else " ".join([str(int(float(pos))) for pos in position_search.groups()])
+    stl_position = "0 0 -15" if position_search is None else " ".join([str(int(float(pos))) for pos in position_search.groups()])
 
     related_bounties = random.sample(HyperBounty.get(limit=30), 4)
     related_bounties = "\n\n".join([f"""

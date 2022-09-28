@@ -10,7 +10,7 @@ from hyperspace.utilities import get_html_template, process_multipart_form_submi
 import hyperspace.ses as ses
 import hyperspace.s3 as s3
 from hyperspace.bounty_system.render_bounties import render_bounty
-from hyperspace.bounty_system.bounty_review import generateReferenceImageForSTLs
+from hyperspace.bounty_system.bounty_review import generateReferenceImageForSTLs, centerSTLDimensions
 
 
 def send_bounty_to_contact(new_bounty):
@@ -93,6 +93,7 @@ def confirm_bounty_creation(event):
     bounty = get_bounty_by_confirmation(confirmation_id)
     bounty.change_state("verified", from_state="submitted")
     generateReferenceImageForSTLs(bounty)
+    centerSTLDimensions(bounty)
 
     bounty_template = render_bounty(bounty.Id).replace(
         '<ol class="breadcrumb">',
