@@ -3,12 +3,8 @@ import re
 
 from hyperspace.utilities import get_html_template
 from hyperspace.objects import HyperBounty
+from hyperspace.stlToImageLambda import stlPositionRegexPattern
 import random
-
-
-def get_rendered_bounty(event):
-    bounty_id = unquote_plus(event['pathParameters']['bounty_id'])
-    return 200, render_bounty(bounty_id)
 
 
 def build_secondary_image_carousel(bounty):
@@ -42,22 +38,35 @@ def build_secondary_image_carousel(bounty):
     return carousel_template.replace("{secondary_images}", secondary_images) if secondary_images else ""
 
 
+def get_random_bounties():
+    related_bounties = random.sample(HyperBounty.get(limit=30), 4)
+    related_bounties = "\n\n".join([f"""
+          <div class="col-md-3 col-sm-6 mb-4">
+            <a href="/rest/rendered_bounty/{related_bounty.Id}">
+              <img class="img-fluid" src="{related_bounty.image_path(related_bounty.primary_image)}" alt="{related_bounty.Name}">
+            </a>
+          </div>
+    """ for related_bounty in related_bounties])
+    return related_bounties
+
+
 def render_bounty(bounty_id):
     bounty_interactions = {
-        "suggest_edit": """<button class="col btn btn-primary" id="suggest_edit_button" onclick="location.href='/rest/edit_bounty/{bounty_id}';">Suggest Edit</button>""",
+        "suggest_edit": """<button class="col btn btn-primary" id="suggest_edit_button" onclick="location.href='/rest/edit_bounty/{bounty_id}';">Suggest an Edit!</button>""",
         "make_this": """<button class="col btn btn-primary" id="make_this_button" onclick="location.href='/rest/call_bounty/{bounty_id}';">I can make this!</button>""",
         "up_this": """<button class="col btn btn-primary" id="up_this_button" onclick="location.href='/rest/bounty_up/{bounty_id}';">I can UP this!</button>""",
         "claim_this": """<button class="col btn btn-primary" id="claim_this_butotn" onclick="location.href='/rest/claim_bounty/{bounty_id}';">I've finished this!</button>""",
-        "ask_benefactor": """<button class="col btn btn-primary" id="ask_this_butotn" onclick="location.href='/rest/ask_benefactor/{bounty_id}';">Ask the Benefactor!</button>""",
+        "ask_benefactor": """<button class="col btn btn-primary" id="ask_this_button" onclick="location.href='/rest/ask_benefactor/{bounty_id}';">Ask the Benefactor!</button>""",
+        "retrieve_refmats": """<button class="col btn btn-primary" id="retrieve_refmats_button" onclick="location.href='/rest/rendered_bounty_refmat/{bounty_id}';">Give me the Reference Materials!</button>""",
     }
     bounty = HyperBounty.retrieve(bounty_id)
 
     if bounty.State == "confirmed":
-        interactions = ["ask_benefactor", "suggest_edit", "make_this"]
+        interactions = ["retrieve_refmats", "ask_benefactor", "suggest_edit", "make_this"]
     elif bounty.State == "called":
-        interactions = ["ask_benefactor", "up_this", "claim_this"]
+        interactions = ["retrieve_refmats", "ask_benefactor", "up_this", "claim_this"]
     else:
-        interactions = []
+        interactions = ["retrieve_refmats"]
     interactions = "\n".join([bounty_interactions[i] for i in interactions])
 
     template = get_html_template("bountycard_stl.html" if len(bounty.stls) > 0 else "bountycard.html")
@@ -66,17 +75,8 @@ def render_bounty(bounty_id):
 
     primary_stl = bounty.stls[0] if len(bounty.stls) > 0 else ''
     primary_stl_image_path = bounty.image_path(primary_stl)
-    position_search = re.search("_stlposition_(.*)x(.*)x(.*).stl", primary_stl)
-    stl_position = "0 0 -15" if position_search is None else " ".join([str(int(float(pos))) for pos in position_search.groups()])
-
-    related_bounties = random.sample(HyperBounty.get(limit=30), 4)
-    related_bounties = "\n\n".join([f"""
-      <div class="col-md-3 col-sm-6 mb-4">
-        <a href="/rest/rendered_bounty/{related_bounty.Id}">
-          <img class="img-fluid" src="{related_bounty.image_path(related_bounty.primary_image)}" alt="{related_bounty.Name}">
-        </a>
-      </div>
-""" for related_bounty in related_bounties])
+    position_search = re.search(stlPositionRegexPattern, primary_stl)
+    stl_position = "0 0 -15" if position_search is None else " ".join([str(float(pos)) for pos in position_search.groups()])
 
     for pattern, replacement in {
             "{interactions}": interactions,
@@ -89,7 +89,27 @@ def render_bounty(bounty_id):
             "{model_position}": stl_position,
             "{secondary_image_carousel}": secondary_image_carousel,
             "{bounty_description}": bounty.Description,
-            "{related_bounties}": related_bounties}.items():
+            "{related_bounties}": get_random_bounties()}.items():
+        template = template.replace(pattern, replacement)
+
+    return template
+
+
+def render_bounty_refmat_page(bounty_id):
+    bounty = HyperBounty.retrieve(bounty_id)
+    template = get_html_template("bounty_refmat.html")
+
+    refmat_links = "<ul>\n"
+    for refMat in bounty.ReferenceMaterial:
+        refmat_links += f'<li><a href="/bountyboard/{bounty_id}/{refMat}">{refMat}</a></li>\n'
+    refmat_links += "</ul>\n"
+
+    for pattern, replacement in {
+            "{refmat_links}": refmat_links,
+            "{bounty_name}": bounty.Name,
+            "{primary_image}": bounty.image_path(bounty.primary_image),
+            "{secondary_image_carousel}": build_secondary_image_carousel(bounty),
+            "{related_bounties}": get_random_bounties()}.items():
         template = template.replace(pattern, replacement)
 
     return template
@@ -124,3 +144,13 @@ def rendered_bounties_in_progress(event):
 def rendered_bounty_portfolio(event):
     bountyboard = render_bountyboard(group="claimed")
     return 200, bountyboard
+
+
+def get_rendered_bounty(event):
+    bounty_id = unquote_plus(event['pathParameters']['bounty_id'])
+    return 200, render_bounty(bounty_id)
+
+
+def get_rendered_bounty_refmat(event):
+    bounty_id = unquote_plus(event['pathParameters']['bounty_id'])
+    return 200, render_bounty_refmat_page(bounty_id)

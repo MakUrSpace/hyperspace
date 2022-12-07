@@ -38,28 +38,30 @@ def centerSTLDimensions(bounty: HyperBounty):
     newReferenceMaterial = []
     for refMat in bounty.ReferenceMaterial:
         if bounty.get_filetype(refMat) == 'stl':
-            existingInfo = re.search(stlToImageLambda.stlPositionPattern, refMat)
-            if existingInfo:
-                refMatName = refMat[:-len(existingInfo.group())]
-            else:
-                refMatName = refMat[:-4]
+            try:
+                existingInfo = re.search(stlToImageLambda.stlPositionRegexPattern, refMat)
+                if existingInfo:
+                    refMatName = refMat[:-len(existingInfo.group())]
+                else:
+                    refMatName = refMat[:-4]
 
-            mods = stlToImageLambda.stlCenteringDimensions(
-                bounty.image_path(refMat)[1:])
+                mods = stlToImageLambda.stlCenteringDimensions(
+                    bounty.image_path(refMat)[1:])
 
-            newRefMatName = f"{refMatName}_stlposition_{mods['xmod']:.2f}x{mods['ymod']:.2f}x{mods['zmod']:.2f}.stl"
-            newRefMatPath = bounty.image_path(newRefMatName)[1:]
+                newRefMatName = f"{refMatName}_stlposition_{mods['xmod']:.2f}x{mods['ymod']:.2f}x{mods['zmod']:.2f}.stl"
+                newRefMatPath = bounty.image_path(newRefMatName)[1:]
 
-            newReferenceMaterial.append(newRefMatName)
-            s3.renamePublic(bounty.image_path(refMat)[1:], newRefMatPath)
-            altered = True
+                s3.renamePublic(bounty.image_path(refMat)[1:], newRefMatPath)
+                newReferenceMaterial.append(newRefMatName)
+                altered = True
+            except:
+                newReferenceMaterial.append(refMat)
         else:
             newReferenceMaterial.append(refMat)
 
     if altered:
-        bounty.ReferenceMaterial = newReferenceMaterial
+        bounty.ReferenceMaterial = list(set(newReferenceMaterial))
         bounty.set()
-
 
 
 def approve_bounty(event):

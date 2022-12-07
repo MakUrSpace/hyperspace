@@ -167,6 +167,9 @@ functions:
       - http:
           path: /rest/rendered_bounty/{bounty_id}
           method: get
+      - http:
+          path: /rest/rendered_bounty_refmat/{bounty_id}
+          method: get
 
 
 custom:

@@ -40,6 +40,11 @@ function updateList(){
 }
 
 
+function rawFilenameParser(filename){
+    return filename.split(' ').join('_')
+}
+
+
 function upload_reference_material(){
     var results = []
     var refmat_by_name = {}
@@ -48,14 +53,15 @@ function upload_reference_material(){
     var checked_file_names = JSON.parse(document.getElementById('checkedRefMatNames').value)
 
     $(refmat.files).each(function(i, elem){
-        refmat_by_name[elem.name] = elem
+        refmat_by_name[rawFilenameParser(elem.name)] = elem
     })
 
     for (var file_index = 0; file_index < refmat.files.length; file_index++){
-        file_names.push(refmat.files[file_index].name)
-        checked_file_names.push(refmat.files[file_index].name)
+        const parsedFilename = rawFilenameParser(refmat.files[file_index].name)
+        file_names.push(parsedFilename)
+        checked_file_names.push(parsedFilename)
         $.ajax({
-            url : `/rest/reference_material/{bounty_id}/${refmat.files[file_index].name}`,
+            url : `/rest/reference_material/{bounty_id}/${parsedFilename}`,
             type : "GET",
             mimeType : "multipart/form-data",
             cache : false,
@@ -85,7 +91,7 @@ function upload_reference_material(){
                 processData : false
             }).done(function (_, textStatus, jqXHR) {
                 if (jqXHR.status != 204) {
-                    file_names.push(`${refmat.files[file_index].name} failed to upload`)
+                    file_names.push(`${parsedFilename} failed to upload`)
                 }
             })
         })

@@ -11,7 +11,7 @@ def stlToImage(stlPath: str, outputFile: str):
     )
 
 
-stlPositionPattern = "_stlposition_(.*)x(.*)x(.*).stl"
+stlPositionRegexPattern = "_stlposition_(.*)x(.*)x(.*).stl"
 
 
 def stlCenteringDimensions(stlPath: str):

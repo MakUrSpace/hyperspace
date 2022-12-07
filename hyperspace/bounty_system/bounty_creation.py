@@ -94,6 +94,7 @@ def confirm_bounty_creation(event):
     bounty.change_state("verified", from_state="submitted")
     generateReferenceImageForSTLs(bounty)
     centerSTLDimensions(bounty)
+    generateReferenceMaterialPage(bounty)
 
     bounty_template = render_bounty(bounty.Id).replace(
         '<ol class="breadcrumb">',

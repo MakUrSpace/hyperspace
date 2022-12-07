@@ -3,7 +3,7 @@ from datetime import datetime
 from hyperspace.LambdaPage import LambdaPage
 
 from hyperspace.bounty_system.get_bounty import handle_get_bountyboard, handle_get_bounty
-from hyperspace.bounty_system.render_bounties import rendered_bountyboard, rendered_bounties_in_progress, rendered_bounty_portfolio, get_rendered_bounty
+from hyperspace.bounty_system.render_bounties import rendered_bountyboard, rendered_bounties_in_progress, rendered_bounty_portfolio, get_rendered_bounty, get_rendered_bounty_refmat
 from hyperspace.bounty_system.bounty_creation import submit_bounty_or_return_form, confirm_bounty_creation
 from hyperspace.bounty_system.discuss_bounty import get_ask_benefactor_form, submit_benefactor_question, get_question_answer_form, submit_benefactor_answer
 from hyperspace.bounty_system.edit_bounty import get_edit_bounty_form, receive_bounty_edits, submit_bounty_edits, confirm_bounty_edits
@@ -76,6 +76,7 @@ def build_page():
     page.add_endpoint(method="get", path="/rest/rendered_bounties_in_progress", func=rendered_bounties_in_progress, content_type="text/html")
     page.add_endpoint(method="get", path="/rest/rendered_bounty_portfolio", func=rendered_bounty_portfolio, content_type="text/html")
     page.add_endpoint(method="get", path="/rest/rendered_bounty/{bounty_id}", func=get_rendered_bounty, content_type="text/html")
+    page.add_endpoint(method="get", path="/rest/rendered_bounty_refmat/{bounty_id}", func=get_rendered_bounty_refmat, content_type="text/html")
 
     return page
 
