@@ -105,6 +105,7 @@ class HyperBounty(
     Name: str
     Benefactor: str
     Contact: str
+    DueDate: str
     Description: str
     ReferenceMaterial: list
     ClaimedBy: str = None
@@ -117,11 +118,12 @@ class HyperBounty(
     def fromm(cls, m):
         kwargs = {k: v for k, v in m.items() if k in cls.__dataclass_fields__.keys()}
         kwargs['Id'] = m['SORT']
-        kwargs['SubmittedStamp'] = kwargs['SubmittedStamp'] if 'SubmittedStamp' in kwargs else None
-        kwargs['Award'] = kwargs['Award'] if 'Award' in kwargs else None
-        kwargs['Name'] = kwargs['Name'] if 'Name' in kwargs else None
-        kwargs['Description'] = kwargs['Description'] if 'Description' in kwargs else None
-        kwargs['State'] = kwargs['State'] if 'State' in kwargs else 'submitted'
+        kwargs['SubmittedStamp'] = kwargs.get('SubmittedStamp', None)
+        kwargs['Award'] = kwargs.get('Award', None)
+        kwargs['Name'] = kwargs.get('Name', None)
+        kwargs['Description'] = kwargs.get('Description', None)
+        kwargs['State'] = kwargs.get('State', 'submitted')
+        kwargs['DueDate'] = kwargs.get('DueDate', None)
         return cls(**kwargs)
 
     @classmethod
@@ -193,13 +195,13 @@ class HyperBounty(
     @property
     def primary_image(self):
         try:
-            return self.get_reference_material(formats=["jpg", "jpeg", "png"])[0]
+            return self.get_reference_material(formats=["jpg", "jpeg", "png", "gif"])[0]
         except IndexError:
             return ""
 
     @property
     def secondary_images(self):
-        formats = ["jpg", "jpeg", "png"]
+        formats = ["jpg", "jpeg", "png", "gif"]
         primary_image = self.primary_image
         file_list = self.FinalImages if self.FinalImages is not None else self.ReferenceMaterial
         file_list = [file

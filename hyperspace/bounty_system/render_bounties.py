@@ -84,6 +84,7 @@ def render_bounty(bounty_id):
             "{bounty_name}": bounty.Name,
             "{bounty_id}": bounty.Id,
             "{bounty_reward}": bounty.reward,
+            "{bounty_due_date}": str(bounty.DueDate),
             "{primary_image}": bounty.image_path(bounty.primary_image),
             "{primary_stl}": primary_stl_image_path,
             "{model_position}": stl_position,

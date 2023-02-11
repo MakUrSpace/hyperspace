@@ -16,7 +16,9 @@ def claim_bounty_form(event):
     bounty = HyperBounty.retrieve(bounty_id)
     upload_refmat_js = get_javascript_template("upload_reference_material.js").replace("{bounty_id}", bounty_id)
     form_template = get_html_template("claim_bounty_template.html").replace(
-        "{upload_reference_material_js}", upload_refmat_js).replace("{bounty_name}", bounty.Name)
+        "{upload_reference_material_js}", upload_refmat_js).replace(
+        "{bounty_name}", bounty.Name).replace(
+        "{reference_material}", "[]")
     return 200, form_template
 
 
@@ -31,6 +33,7 @@ def handle_bounty_claim(event):
     maker = HyperMaker.retrieveByEmail(claim.pop("MakerEmail"))
     bounty = HyperBounty.retrieve(claim.pop("BountyId"))
     bounty.FinalImages = claim["FinalImages"]
+    print(f"Bounty has {len(bounty.FinalImages)} final images")
 
     confirmation_id = str(uuid4())
 
@@ -45,6 +48,7 @@ def handle_bounty_claim(event):
             "{product_images}": bounty.FinalImagesHTML}.items():
         email_template = email_template.replace(pattern, replacement)
 
+    bounty.set()
     murd.update([
         {mddb.group_key: "bounty_claim_confirmations",
          mddb.sort_key: confirmation_id,
