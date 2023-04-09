@@ -53,6 +53,7 @@ def submit_completed_bounty_form(event):
     except Exception:
         raise Exception(f"Unrecognized maker: {maker_email}")
     completed_bounty_defn["Benefactor"] = maker.MakerName
+    completed_bounty_defn["DueDate"] = None
 
     completed_bounty = HyperBounty(**completed_bounty_defn,
                                    State="submitted")
