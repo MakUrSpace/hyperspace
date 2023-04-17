@@ -3,6 +3,7 @@ from uuid import uuid4
 import json
 from base64 import b64decode
 from geoip import geolite2
+from traceback import format_exc
 
 from hyperspace.murd import mddb, murd
 from hyperspace.objects import HyperBounty, asdict
@@ -41,23 +42,32 @@ def send_bounty_to_contact(new_bounty):
 
 def submit_bounty_form(event):
     s3.write(f"submissions/sub-{uuid4()}", json.dumps(event).encode(), "makurspace")
+    print("Creating bounty")
 
-    sourceIp = event['requestContext']['identity']['sourceIp']
-    if geolite2.lookup(sourceIp).country != 'US':
-        return 403, "Unable to serve requests from outside of the USA"
-    else:
-        print("Request appears to be from within the US")
+    # sourceIp = event['requestContext']['identity']['sourceIp']
+    # try:
+    #     if geolite2.lookup(sourceIp).country != 'US':
+    #         return 403, "Unable to serve requests from outside of the USA"
+    #     else:
+    #         print("Request appears to be from within the US")
+    # except:
+    #     print(f"Failed to validate that the request originates in the US")
+    #     print(format_exc())
+    #     return 500, "Unable to validate that the request originates in the US"
 
-    new_bounty_defn = {}
+    try:
+        new_bounty_defn = {}
+        content_type = event['headers']['content-type']
+        form_data = b64decode(event['body'].encode())
+        new_bounty_defn = process_multipart_form_submission(form_data, content_type)
+        new_bounty_defn['Id'] = new_bounty_defn.pop("BountyId")
+        new_bounty = HyperBounty(**new_bounty_defn,
+                                 State="submitted")
+    except:
+        print(f"Failed to create new bounty")
+        print(format_exc())
+        raise
 
-    content_type = event['headers']['content-type']
-    form_data = b64decode(event['body'])
-
-    new_bounty_defn = process_multipart_form_submission(form_data, content_type)
-    new_bounty_defn['Id'] = new_bounty_defn.pop("BountyId")
-
-    new_bounty = HyperBounty(**new_bounty_defn,
-                             State="submitted")
     new_bounty.stampSUBMITTED()
     try:
         new_bounty.set()
@@ -68,6 +78,7 @@ def submit_bounty_form(event):
         print(f"FAILURE: Deleting bounty due to: {e}")
         murd.delete([new_bounty.asm()])
         return 403, "Failed to submit bounty"
+    print("Bounty creation successful")
 
     return 200, response_template
 

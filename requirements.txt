@@ -2,6 +2,6 @@ boto3
 LambdaPage
 murdaws
 requests_toolbelt
-python-geoip-python3
-python-geoip-geolite2
 import-ipynb
+python-geoip-geolite2
+python-geoip-python3

@@ -2,6 +2,7 @@ import json
 from io import BytesIO
 import boto3
 import os
+from traceback import format_exc
 
 
 default_bucket = os.environ.get("MakurspaceStaticAssets", "makerspace-dev-static-assets")
@@ -39,7 +40,6 @@ def list_contents(s3_path):
 
 def write(s3_path, content, bucket=None):
     bucket = bucket if bucket is not None else default_bucket
-    print(f"Writing s3://{bucket}/{s3_path}")
     content_bytes = BytesIO(content)
     boto3.client("s3").upload_fileobj(
         Fileobj=content_bytes,

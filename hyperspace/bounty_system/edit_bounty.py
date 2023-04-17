@@ -47,7 +47,7 @@ def receive_bounty_edits(event):
     except sanitize_email.InvalidEmailAddress:
         raise Exception("To suggest a Bounty edit, you must submit a valid email address")
     except HyperMaker.UnrecognizedMaker:
-        raise Exception('To suggest a Bounty edit, you must be a registered maker. <a href="https://www.makurspace.com/maker_registration.html">Consider registering here</a>')
+        raise Exception('To suggest a Bounty edit, you must be a registered maker. <a href="https://www.bountyboard.makurspace.com/maker_registration.html">Consider registering here</a>')
 
     changeMap = json.loads(bounty_edit.pop("changed"))
     editted_bounty = HyperBounty(**{**asdict(bounty), **bounty_edit,

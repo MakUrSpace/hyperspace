@@ -6,34 +6,36 @@ plugins:
 provider:
   name: aws
   stage: prod
-  runtime: python3.9
+  runtime: python3.10
   region: us-east-1
-  iamRoleStatements:
-    - Effect: Allow
-      Action:
-        - dynamodb:ListTables
-      Resource: '*'
-    - Effect: Allow
-      Action:
-        - dynamodb:*
-      Resource: 'arn:aws:dynamodb:*:*:table/musbb_murd_*'
-    - Effect: Allow
-      Action:
-        - s3:*
-      Resource: 'arn:aws:s3:::${env:MakurspaceStaticAssets}/*'
-    - Effect: Allow
-      Action:
-        - s3:*
-      Resource: 'arn:aws:s3:::${env:MakurspaceEnv}/*'
-    - Effect: Allow
-      Action:
-        - ses:SendEmail
-        - ses:SendRawEmail
-      Resource: '*'
-    - Effect: Allow
-      Action:
-        - lambda:InvokeFunction
-      Resource: 'arn:aws:lambda:*:*:function:stl_to_image'
+  iam:
+    role:
+      statements:
+        - Effect: Allow
+          Action:
+            - dynamodb:ListTables
+          Resource: '*'
+        - Effect: Allow
+          Action:
+            - dynamodb:*
+          Resource: 'arn:aws:dynamodb:*:*:table/musbb_murd_*'
+        - Effect: Allow
+          Action:
+            - s3:*
+          Resource: 'arn:aws:s3:::${env:MakurspaceStaticAssets}/*'
+        - Effect: Allow
+          Action:
+            - s3:*
+          Resource: 'arn:aws:s3:::${env:MakurspaceEnv}/*'
+        - Effect: Allow
+          Action:
+            - ses:SendEmail
+            - ses:SendRawEmail
+          Resource: '*'
+        - Effect: Allow
+          Action:
+            - lambda:InvokeFunction
+          Resource: 'arn:aws:lambda:*:*:function:stl_to_image'
 
 package:
   individually: true

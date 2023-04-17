@@ -1,4 +1,5 @@
 from datetime import datetime
+import json
 
 from hyperspace.LambdaPage import LambdaPage
 
@@ -83,7 +84,7 @@ def build_page():
 
 def lambda_handler(event, context):
     start = datetime.utcnow()
-    print(f"Handling {event}")
+    print(f"Handling: {json.dumps(event)}")
     page = build_page()
     results = page.handle_request(event)
     build_time = (datetime.utcnow() - start).total_seconds()

@@ -220,14 +220,14 @@ class HyperBounty(
     @property
     def ReferenceMaterialHTML(self):
         return '<br>'.join([
-            f'<img src=https://www.makurspace.com{self.image_path(refMatName)} alt="{self.Name}: {refMatName}" width="200" height="200">'
+            f'<img src=https://www.bountyboard.makurspace.com{self.image_path(refMatName)} alt="{self.Name}: {refMatName}" width="200" height="200">'
             for refMatName in self.ReferenceMaterial
         ])
 
     @property
     def FinalImagesHTML(self):
         return '<br>'.join([
-            f'<img src=https://www.makurspace.com{self.image_path(finalImage)} alt="{self.Name}: {finalImage}" width="200" height="200">'
+            f'<img src=https://www.bountyboard.makurspace.com{self.image_path(finalImage)} alt="{self.Name}: {finalImage}" width="200" height="200">'
             for finalImage in self.FinalImages
         ])
 

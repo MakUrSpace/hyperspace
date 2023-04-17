@@ -39,7 +39,10 @@ def build_secondary_image_carousel(bounty):
 
 
 def get_random_bounties():
-    related_bounties = random.sample(HyperBounty.get(limit=30), 4)
+    try:
+        related_bounties = random.sample(HyperBounty.get(limit=30), 4)
+    except:
+        related_bounties = []
     related_bounties = "\n\n".join([f"""
           <div class="col-md-3 col-sm-6 mb-4">
             <a href="/rest/rendered_bounty/{related_bounty.Id}">

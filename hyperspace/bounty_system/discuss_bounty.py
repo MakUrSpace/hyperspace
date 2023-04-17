@@ -93,4 +93,4 @@ def submit_benefactor_answer(event):
     ses.send_email(subject=f'{questionMaker.MakerName}, got an answer for you!', sender="commissions@makurspace.com",
                    contact=questionMaker.sanitized_maker_email, content=email_template)
 
-    return 200, f'Question answer received! Your answer was sent to the questioner and added to the <a href="https://www.makurspace.com/rest/rendered_bounty/{question.BountyId}">bounty listing</a>'
+    return 200, f'Question answer received! Your answer was sent to the questioner and added to the <a href="https://www.bountyboard.makurspace.com/rest/rendered_bounty/{question.BountyId}">bounty listing</a>'
