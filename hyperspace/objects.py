@@ -300,7 +300,7 @@ class HyperMaker(HyperObject):
         email = sanitize_email(email)
         makers = cls.get()
         try:
-            return [maker for maker in makers if maker.MakerEmail == email][0]
+            return [maker for maker in makers if maker.MakerEmail.lower() == email.lower()][0]
         except IndexError:
             raise cls.UnrecognizedMaker(f"No maker found by {email}")
 
