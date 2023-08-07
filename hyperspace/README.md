@@ -19,13 +19,13 @@ Asking price for the described good. Defined as a float, though typically stored
 
 Name for the bounty. This must be a unique string among active bounties.
 
-## Benefactor
+## Recipient
 
 Name of the entity to receive the described good
 
 ## Contact
 
-Email address at which to contact the Benefactor
+Email address at which to contact the Recipient
 
 ## TemplateProject
 
@@ -55,7 +55,7 @@ The bounty_name endpoint will return a JSON dictionary defining a bounty.
 {
     "Bounty": "300",
     "BountyName": "Drink Stabilizer",
-    "Benefactor": "b.d.trane",
+    "Recipient": "b.d.trane",
     "Contact": "commissions@makurspace.com",
     "TemplateProject": "None",
     "ProjectDescription": "Pocketable, imprintable, disposable drink-attachment to prevent spilling and enhance bigdogity",
@@ -78,7 +78,7 @@ The bountyboard endpoint will return a JSON list of dictionaries, each dictionar
     {
         "Bounty": "150.3",
         "BountyName": "Vat Drain",
-        "Benefactor": "musingsole",
+        "Recipient": "musingsole",
         "Contact": "commissions@makurspace",
         "TemplateProject": "None",
         "ProjectDescription": "A stand that can hold a resin vat and allow it to drain into a storage bottle",
@@ -87,7 +87,7 @@ The bountyboard endpoint will return a JSON list of dictionaries, each dictionar
     {
         "Bounty": "300",
         "BountyName": "Drink Stabilizer",
-        "Benefactor": "b.d.trane",
+        "Recipient": "b.d.trane",
         "Contact": "commissions@makurspace.com",
         "TemplateProject": "None",
         "ProjectDescription": "Pocketable, imprintable, disposable drink-attachment to prevent spilling and enhance bigdogity",
@@ -109,7 +109,7 @@ The request body must be a JSON dictionary defining a bounty. The BountyName mus
 {
     "Bounty": "150.3",
     "BountyName": "Vat Drain",
-    "Benefactor": "musingsole",
+    "Recipient": "musingsole",
     "Contact": "commissions@makurspace",
     "TemplateProject": "None",
     "ProjectDescription": "A stand that can hold a resin vat and allow it to drain into a storage bottle",

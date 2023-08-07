@@ -63,7 +63,7 @@ def handle_bounty_claim(event):
                    sender="commissions@makurspace.com",
                    contact=bounty.sanitized_contact_email,
                    content=email_template)
-    return 200, "Bounty claim submitted! The bounty's benefactor will be contacted for approval, " \
+    return 200, "Bounty claim submitted! The bounty's recipient will be contacted for approval, " \
         + "after which the bounty's product will be collected. Finally, the bounty award will be disbursed to you!"
 
 

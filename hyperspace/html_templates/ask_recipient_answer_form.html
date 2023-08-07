@@ -5,9 +5,9 @@
 
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-  <meta name="description" content="MakUrSpace Ask the Benefactor Form">
+  <meta name="description" content="MakUrSpace Recipient Answer Form">
   <meta name="author" content="MakUrSpace, LLC">
-  <title>Ask the Benefactor of "{bounty_name}"</title>
+  <title>Submit your answer to "{question_title}"</title>
   <link href="/vendor/bootstrap/css/bootstrap.min.css" rel="stylesheet">
   <link href="/css/modern-business.css" rel="stylesheet">
   <link href="/css/makurspace.css" rel="stylesheet">
@@ -21,31 +21,21 @@
   <div class="container" style="margin-top: 60px; margin-bottom: 30px">
     <ol class="breadcrumb">
       <li class="breadcrumb-item">
-        <h1 class="mt-4 mb-3">Ask the Benefactor of "{bounty_name}" a Question!</h1>
+        <h1 class="mt-4 mb-3">Submit your answer to "{question_title}"</h1>
       </li>
     </ol>
+    <h3>Question: "{question_title}"</h3>
+    <p>{question_text}<p>
     <div class="row">
       <div class="col-lg-8 mb-4">
-        <form name="sentMessage" id="bounty_form" novalidate enctype="multipart/form-data" method="post" action="/rest/ask_benefactor/{bounty_id}">
+        <form name="sentMessage" id="bounty_form" novalidate enctype="multipart/form-data" method="post" action="/rest/question/{question_id}">
           <div class="control-group form-group">
             <div class="controls">
-              <label>Question Title:</label>
-              <input type="text" class="form-control" id="QuestionTitle" name="QuestionTitle" required data-validation-required-message="Please enter a unique title for this question">
+              <label>Answer:</label>
+              <textarea rows="10" cols="100" class="form-control" id="QuestionAnswer" name="QuestionAnswer" required data-validation-required-message="Enter your answer to the question here" rows="5" maxlength="499" style="resize:none"></textarea>
             </div>
           </div>
-          <div class="control-group form-group">
-            <div class="controls">
-              <label>Question:</label>
-              <textarea rows="10" cols="100" class="form-control" id="QuestionText" name="QuestionText" required data-validation-required-message="Enter your question here" rows="5" maxlength="499" style="resize:none"></textarea>
-            </div>
-          </div>
-          <div class="control-group form-group">
-            <div class="controls">
-              <label>Your Maker email:</label>
-              <input type="text" class="form-control" id="Questioner" name="Questioner" required data-validation-required-message="Please enter the email address you've registered with MakUrSpace" value="">
-            </div>
-          </div>
-          <button type="submit" class="btn btn-primary" id="submit">Ask Question</button>
+          <button type="submit" class="btn btn-primary" id="submit">Submit Answer</button>
         </form>
       </div>
 

@@ -107,10 +107,10 @@ functions:
           path: /rest/completed_bounty_confirmation/{bounty_confirmation_id}
           method: get
       - http:
-          path: /rest/ask_benefactor/{bounty_id}
+          path: /rest/ask_recipient/{bounty_id}
           method: get
       - http:
-          path: /rest/ask_benefactor/{bounty_id}
+          path: /rest/ask_recipient/{bounty_id}
           method: post
       - http:
           path: /rest/question/{question_id}

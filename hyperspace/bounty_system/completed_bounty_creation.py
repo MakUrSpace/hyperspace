@@ -52,7 +52,7 @@ def submit_completed_bounty_form(event):
         maker = HyperMaker.retrieveByEmail(maker_email)
     except Exception:
         raise Exception(f"Unrecognized maker: {maker_email}")
-    completed_bounty_defn["Benefactor"] = maker.MakerName
+    completed_bounty_defn["Recipient"] = maker.MakerName
     completed_bounty_defn["DueDate"] = None
 
     completed_bounty = HyperBounty(**completed_bounty_defn,
@@ -62,7 +62,7 @@ def submit_completed_bounty_form(event):
         completed_bounty.set()
         send_completed_bounty_to_contact(completed_bounty)
         response_template = get_html_template("bounty_submission_response_template.html")
-        response_template = response_template.replace("{benefactor_email}", completed_bounty.Contact)
+        response_template = response_template.replace("{recipient_email}", completed_bounty.Contact)
     except Exception as e:
         print(f"FAILURE: Deleting bounty due to: {e}")
         murd.delete([completed_bounty.asm()])

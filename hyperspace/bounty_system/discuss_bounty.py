@@ -7,17 +7,17 @@ from hyperspace.objects import HyperMaker, HyperBounty, HyperQuestion
 import hyperspace.ses as ses
 
 
-def get_ask_benefactor_form(event):
+def get_ask_recipient_form(event):
     bounty_id = unquote_plus(event['pathParameters']['bounty_id'])
     bounty = HyperBounty.retrieve(bounty_id)
-    form = get_html_template("ask_benefactor_form.html")
+    form = get_html_template("ask_recipient_form.html")
     form = form.replace("{bounty_name}", bounty.Name)
     form = form.replace("{bounty_id}", bounty.Id)
     return 200, form
 
 
 @billboardPage
-def submit_benefactor_question(event):
+def submit_recipient_question(event):
     bounty_id = unquote_plus(event['pathParameters']['bounty_id'])
     bounty = HyperBounty.retrieve(bounty_id)
 
@@ -39,7 +39,7 @@ def submit_benefactor_question(event):
                              Answer="")
     question.set()
 
-    email_template = get_html_template("ask_benefactor_email.html")
+    email_template = get_html_template("ask_recipient_email.html")
     for pattern, value in {
         "bounty_name": bounty.Name,
         "questioner": maker.MakerName,
@@ -49,16 +49,16 @@ def submit_benefactor_question(event):
     }.items():
         email_template = email_template.replace(f"{{{pattern}}}", value)
 
-    ses.send_email(subject=f'{bounty.Benefactor}, got a question for you!', sender="commissions@makurspace.com",
+    ses.send_email(subject=f'{bounty.Recipient}, got a question for you!', sender="commissions@makurspace.com",
                    contact=bounty.sanitized_contact_email, content=email_template)
 
-    return 200, f"Bounty question submitted! Your question was sent along to the benefactor of {bounty.Name}. You'll be notified when they answer."
+    return 200, f"Bounty question submitted! Your question was sent along to the recipient of {bounty.Name}. You'll be notified when they answer."
 
 
 def get_question_answer_form(event):
     question_id = unquote_plus(event['pathParameters']['question_id'])
     question = HyperQuestion.retrieve(question_id)
-    form = get_html_template("ask_benefactor_answer_form.html")
+    form = get_html_template("ask_recipient_answer_form.html")
     for pattern, value in {
         "question_title": question.QuestionTitle,
         "question_text": question.QuestionText,
@@ -69,7 +69,7 @@ def get_question_answer_form(event):
 
 
 @billboardPage
-def submit_benefactor_answer(event):
+def submit_recipient_answer(event):
     question_id = unquote_plus(event['pathParameters']['question_id'])
     question = HyperQuestion.retrieve(question_id)
     questionMaker = HyperMaker.retrieve(question.Questioner)
@@ -82,7 +82,7 @@ def submit_benefactor_answer(event):
     question.Answer = submitted_answer['QuestionAnswer']
     question.set()
 
-    email_template = get_html_template("ask_benefactor_answer_email.html")
+    email_template = get_html_template("ask_recipient_answer_email.html")
     for pattern, value in {
         "bounty_name": bounty.Name,
         "question_title": question.QuestionTitle,

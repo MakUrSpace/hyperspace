@@ -52,7 +52,7 @@ def receive_bounty_edits(event):
     changeMap = json.loads(bounty_edit.pop("changed"))
     editted_bounty = HyperBounty(**{**asdict(bounty), **bounty_edit,
                                     "Id": bounty.Id,
-                                    "Benefactor": bounty.Benefactor,
+                                    "Recipient": bounty.Recipient,
                                     "Contact": bounty.Contact})
 
     for attr in changeMap:
@@ -96,11 +96,11 @@ def submit_bounty_edits(event):
     bounty_edit_id = unquote_plus(event['pathParameters']['bounty_edit_id'])
     edit_ticket = murd.read_first(group="bounty_edit_submission", sort=bounty_edit_id)
     editted_bounty = HyperBounty.fromm(edit_ticket['EdittedBounty'])
-    send_edit_to_benefactor(editted_bounty, edit_ticket['Editor'])
-    return 200, "Bounty edits confirmed! Your suggested edits have been sent to the bounty's benefactor for review"
+    send_edit_to_recipient(editted_bounty, edit_ticket['Editor'])
+    return 200, "Bounty edits confirmed! Your suggested edits have been sent to the bounty's recipient for review"
 
 
-def send_edit_to_benefactor(new_bounty, editor):
+def send_edit_to_recipient(new_bounty, editor):
     email_template = get_html_template("bounty_suggestion_email_template.html")
     editMaker = HyperMaker.retrieve(editor)
 

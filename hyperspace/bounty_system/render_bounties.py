@@ -59,15 +59,15 @@ def render_bounty(bounty_id):
         "make_this": """<button class="col btn btn-primary" id="make_this_button" onclick="location.href='/rest/call_bounty/{bounty_id}';">I can make this!</button>""",
         "up_this": """<button class="col btn btn-primary" id="up_this_button" onclick="location.href='/rest/bounty_up/{bounty_id}';">I can UP this!</button>""",
         "claim_this": """<button class="col btn btn-primary" id="claim_this_butotn" onclick="location.href='/rest/claim_bounty/{bounty_id}';">I've finished this!</button>""",
-        "ask_benefactor": """<button class="col btn btn-primary" id="ask_this_button" onclick="location.href='/rest/ask_benefactor/{bounty_id}';">Ask the Benefactor!</button>""",
+        "ask_recipient": """<button class="col btn btn-primary" id="ask_this_button" onclick="location.href='/rest/ask_recipient/{bounty_id}';">Ask the Recipient!</button>""",
         "retrieve_refmats": """<button class="col btn btn-primary" id="retrieve_refmats_button" onclick="location.href='/rest/rendered_bounty_refmat/{bounty_id}';">Give me the Reference Materials!</button>""",
     }
     bounty = HyperBounty.retrieve(bounty_id)
 
     if bounty.State == "confirmed":
-        interactions = ["retrieve_refmats", "ask_benefactor", "suggest_edit", "make_this"]
+        interactions = ["retrieve_refmats", "ask_recipient", "suggest_edit", "make_this"]
     elif bounty.State == "called":
-        interactions = ["retrieve_refmats", "ask_benefactor", "up_this", "claim_this"]
+        interactions = ["retrieve_refmats", "ask_recipient", "up_this", "claim_this"]
     else:
         interactions = ["retrieve_refmats"]
     interactions = "\n".join([bounty_interactions[i] for i in interactions])
@@ -129,7 +129,9 @@ def render_bountyboard(group="confirmed", limit=200):
         bountyboard_card = bountyboard_card.replace("{primary_image}", bounty.image_path(bounty.primary_image))
         bountyboard_card = bountyboard_card.replace("{bounty_name}", bounty.Name)
         bountyboard_card = bountyboard_card.replace("{bounty_reward}", bounty.reward)
+        bountyboard_card = bountyboard_card.replace("{bounty_reward}", bounty.reward)
         bountyboard_card = bountyboard_card.replace("{bounty_description}", bounty.Description)
+        bountyboard_card = bountyboard_card.replace("{bounty_due_date}", ' ' + bounty.DueDate if bounty.DueDate is not None else '')
         bountyboard_cards.append(bountyboard_card)
     bountyboard_template = bountyboard_template.replace("{bounties}", "\n".join(bountyboard_cards))
     return bountyboard_template

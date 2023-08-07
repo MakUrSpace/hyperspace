@@ -103,7 +103,7 @@ class HyperBounty(
     State: str
     Award: str
     Name: str
-    Benefactor: str
+    Recipient: str
     Contact: str
     DueDate: str
     Description: str
@@ -113,6 +113,7 @@ class HyperBounty(
     FinalImages: list = None
     CompletionNotes: str = None
     MakerId: str = None
+    TechTags: list = None
 
     @classmethod
     def fromm(cls, m):

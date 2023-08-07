@@ -73,7 +73,7 @@ def submit_bounty_form(event):
         new_bounty.set()
         send_bounty_to_contact(new_bounty)
         response_template = get_html_template("bounty_submission_response_template.html")
-        response_template = response_template.replace("{benefactor_email}", new_bounty.Contact)
+        response_template = response_template.replace("{recipient_email}", new_bounty.Contact)
     except Exception as e:
         print(f"FAILURE: Deleting bounty due to: {e}")
         murd.delete([new_bounty.asm()])
